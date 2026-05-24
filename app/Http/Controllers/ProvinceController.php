@@ -46,7 +46,6 @@ class ProvinceController extends Controller
     {
         $province = Province::where('slug', $provinceSlug)->firstOrFail();
 
-        // Support both slug and id for backward compatibility
         $region = Region::where('province_id', $province->id)
             ->where(function($q) use ($regionSlug) {
                 $q->where('slug', $regionSlug)->orWhere('id', $regionSlug);

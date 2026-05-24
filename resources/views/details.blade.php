@@ -343,6 +343,56 @@
         </div>
         @endif
 
+        <!-- ROOMS (hotels only) -->
+        @if($place->category_id == 3 && $place->rooms->count())
+        <div class="section-card">
+            <h2>Pilihan Kamar 🛏️</h2>
+
+            @if(isset($userBooking) && $userBooking)
+            <div style="background:rgba(45,106,79,0.08);border:1px solid var(--lime);border-radius:10px;padding:14px 18px;margin-bottom:20px;font-size:14px;color:var(--jade);">
+                ✓ Kamu memiliki booking aktif di hotel ini.
+                <a href="{{ route('bookings.show', $userBooking->id) }}" style="font-weight:700;color:var(--jade);margin-left:8px;">Lihat Booking →</a>
+            </div>
+            @endif
+
+            <div style="display:flex;flex-direction:column;gap:16px;">
+                @foreach($place->rooms as $room)
+                <div style="border:1.5px solid #e8e3da;border-radius:14px;padding:20px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;">
+                    <div style="flex:1;min-width:200px;">
+                        <div style="font-size:17px;font-weight:700;color:var(--ink);margin-bottom:4px;">{{ $room->name }}</div>
+                        @if($room->description)
+                            <div style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:8px;">{{ $room->description }}</div>
+                        @endif
+                        <span style="font-size:12px;color:var(--muted);">👥 Maks. {{ $room->max_guests }} tamu</span>
+                        @if(!$room->is_available)
+                            <span style="font-size:12px;color:var(--coral);font-weight:600;margin-left:12px;">✗ Tidak tersedia</span>
+                        @endif
+                    </div>
+                    <div style="text-align:right;flex-shrink:0;">
+                        <div style="font-family:'Playfair Display',serif;font-size:22px;font-weight:900;color:var(--forest);">{{ $room->price_label }}</div>
+                        <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">per malam</div>
+                        @auth
+                            @if($room->is_available)
+                                <a href="{{ route('booking.create', $room->id) }}"
+                                   style="display:inline-block;background:var(--coral);color:white;padding:10px 22px;border-radius:8px;font-size:14px;font-weight:700;text-decoration:none;">
+                                    Pesan Kamar →
+                                </a>
+                            @else
+                                <span style="display:inline-block;background:#ddd;color:#999;padding:10px 22px;border-radius:8px;font-size:14px;font-weight:700;">Tidak Tersedia</span>
+                            @endif
+                        @else
+                            <a href="{{ route('login') }}"
+                               style="display:inline-block;background:var(--jade);color:white;padding:10px 22px;border-radius:8px;font-size:14px;font-weight:700;text-decoration:none;">
+                                Login untuk Memesan
+                            </a>
+                        @endauth
+                    </div>
+                </div>
+                @endforeach
+            </div>
+        </div>
+        @endif
+
         <!-- Operating Hours -->
         @if($place->operatingHours->count())
         <div class="section-card">

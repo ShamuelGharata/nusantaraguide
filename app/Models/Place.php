@@ -50,6 +50,11 @@ class Place extends Model
         return $this->hasMany(OperatingHour::class, 'place_id');
     }
 
+    public function rooms()
+    {
+        return $this->hasMany(Room::class)->where('is_available', 1);
+    }
+
     public function events()
     {
         return $this->hasMany(Event::class, 'place_id')

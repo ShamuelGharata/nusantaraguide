@@ -9,6 +9,7 @@ use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\ItineraryController;
 use App\Http\Controllers\ProvinceController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\BookingController;
 
 // ─── AUTH ───────────────────────────────────────────────────
 Route::get('/', [AuthController::class, 'showRegister'])->name('register');
@@ -57,6 +58,15 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/profile/{id?}', [ProfileController::class, 'show'])->name('profile.show');
     Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+
+    // Bookings
+    Route::get('/booking/room/{roomId}', [BookingController::class, 'create'])->name('booking.create');
+    Route::post('/booking', [BookingController::class, 'store'])->name('booking.store');
+    Route::get('/booking/{id}', [BookingController::class, 'show'])->name('bookings.show');
+    Route::get('/my-bookings', [BookingController::class, 'myBookings'])->name('bookings.my');
+    Route::post('/booking/{id}/cancel', [BookingController::class, 'cancel'])->name('booking.cancel');
+    Route::get('/admin/bookings', [BookingController::class, 'adminIndex'])->name('admin.bookings');
+    Route::post('/admin/bookings/{id}/status', [BookingController::class, 'updateStatus'])->name('admin.bookings.status');
 
     // Follow system
     Route::post('/follow/{id}', [ProfileController::class, 'toggleFollow'])->name('follow.toggle');

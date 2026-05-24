@@ -19,7 +19,6 @@ class PlaceController extends Controller
         $categories = DB::table('categories')->get();
         $provinces  = Province::withCount('regions')->take(6)->get();
 
-        // Featured/popular places (most favorited)
         $featuredPlaces = Place::with(['region.province', 'category'])
             ->where('is_verified', 1)
             ->withCount('favorites')
@@ -27,7 +26,6 @@ class PlaceController extends Controller
             ->take(6)
             ->get();
 
-        // Latest itinerary posts for social section preview
         $latestItineraries = \App\Models\ItineraryPost::with(['user', 'region'])
             ->where('status', 'published')
             ->withCount('likes')
@@ -35,7 +33,6 @@ class PlaceController extends Controller
             ->take(3)
             ->get();
 
-        // Upcoming events
         $events = DB::table('events')
             ->where('end_date', '>=', now())
             ->orderBy('start_date')
@@ -52,7 +49,6 @@ class PlaceController extends Controller
 
     /**
      * Browse ALL places with advanced filtering.
-     * Supports: province, region, category, search, sort, price range.
      */
     public function browse(Request $request)
     {
@@ -60,7 +56,6 @@ class PlaceController extends Controller
             ->withAvg('reviews', 'rating')
             ->withCount('favorites');
 
-        // Filters
         if ($request->filled('category')) {
             $query->where('category_id', $request->category);
         }
@@ -81,7 +76,6 @@ class PlaceController extends Controller
             $query->where('price_start', '<=', $request->price_max);
         }
 
-        // Sort
         $sort = $request->get('sort', 'popular');
         match ($sort) {
             'rating'  => $query->orderByDesc('reviews_avg_rating'),
@@ -113,28 +107,38 @@ class PlaceController extends Controller
             'events',
             'region.province',
             'category',
+            'rooms',
         ])->findOrFail($id);
 
-        // Average rating
         $avgRating = $place->reviews->avg('rating');
 
-        // Rating breakdown
         $ratingBreakdown = $place->reviews
             ->groupBy('rating')
             ->map->count();
 
-        // Check if current user has reviewed
         $userReview = Auth::check()
             ? $place->reviews->firstWhere('user_id', Auth::id())
             : null;
 
-        // Nearby places (same region, same category)
         $nearby = Place::where('region_id', $place->region_id)
             ->where('id', '!=', $place->id)
             ->where('category_id', $place->category_id)
             ->take(3)
             ->get();
 
-        return view('details', compact('place', 'avgRating', 'ratingBreakdown', 'userReview', 'nearby'));
+        // Check if user has an active booking at this hotel
+        $userBooking = null;
+        if (Auth::check() && $place->category_id == 3) {
+            $userBooking = \App\Models\Booking::where('user_id', Auth::id())
+                ->where('place_id', $place->id)
+                ->whereIn('status', ['pending', 'confirmed'])
+                ->latest()
+                ->first();
+        }
+
+        return view('details', compact(
+            'place', 'avgRating', 'ratingBreakdown',
+            'userReview', 'nearby', 'userBooking'
+        ));
     }
 }
