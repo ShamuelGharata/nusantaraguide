@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', '{{ $place->name }} — NusantaraGuide')
+@section('title', $place->name . ' — NusantaraGuide')
 @section('styles')
 <style>
     .place-hero{width:100%;height:460px;position:relative;overflow:hidden;background:var(--forest);}
@@ -178,7 +178,11 @@
                     @php $h=$hoursByDay[$day]; @endphp
                     <div class="hours-row {{ $day===$todayEn?'hours-today':'' }}">
                         <span class="hours-day">{{ $dayLabels[$day] }}@if($day===$todayEn)<small style="color:var(--jade);font-size:11px;"> (Hari ini)</small>@endif</span>
-                        @if($h->is_closed)<span class="hours-closed">Tutup</span>@else<span class="hours-time">{{ substr($h->open_time,0,5) }} – {{ substr($h->close_time,0,5) }}</span>@endif
+                        @if($h->is_closed)
+                            <span class="hours-closed">Tutup</span>
+                        @else
+                            <span class="hours-time">{{ substr($h->open_time,0,5) }} – {{ substr($h->close_time,0,5) }}</span>
+                        @endif
                     </div>
                     @endif
                 @endforeach
@@ -192,7 +196,14 @@
             @foreach($place->events as $event)
             <div style="padding:14px 0;border-bottom:1px solid #f5f5f5;">
                 <div style="font-weight:600;font-size:15px;color:var(--ink);margin-bottom:4px;">{{ $event->name }}</div>
-                <div style="font-size:13px;color:var(--muted);margin-bottom:6px;">📅 {{ $event->start_date->isoFormat('D MMM YYYY') }} @if($event->price > 0)· Rp {{ number_format($event->price,0,',','.') }}@else· Gratis@endif</div>
+                <div style="font-size:13px;color:var(--muted);margin-bottom:6px;">
+                    📅 {{ $event->start_date->isoFormat('D MMM YYYY') }}
+                    @if($event->price > 0)
+                        · Rp {{ number_format($event->price,0,',','.') }}
+                    @else
+                        · Gratis
+                    @endif
+                </div>
                 <div style="font-size:14px;color:#555;">{{ $event->description }}</div>
             </div>
             @endforeach

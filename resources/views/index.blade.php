@@ -175,6 +175,41 @@
     </div>
 </section>
 
+
+<section class="section" style="background:linear-gradient(135deg,#0d1b35 0%,#1a2d6a 100%);padding:60px 8%;">
+    <div style="max-width:900px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center;">
+        <div>
+            <div style="font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--lime);margin-bottom:12px;">Fitur Unggulan</div>
+            <h2 style="font-family:'Playfair Display',serif;font-size:clamp(24px,4vw,36px);color:white;font-weight:900;margin-bottom:14px;line-height:1.2;">Rencanakan Budget<br>Perjalananmu 💰</h2>
+            <p style="font-size:15px;color:rgba(255,255,255,0.7);line-height:1.7;margin-bottom:24px;">Estimasi biaya hotel, makan, aktivitas, dan transportasi ke seluruh Indonesia — disesuaikan dengan gaya perjalananmu.</p>
+            <a href="{{ route('budget.index') }}" style="display:inline-block;background:var(--coral);color:white;padding:14px 32px;border-radius:10px;font-size:15px;font-weight:700;text-decoration:none;transition:background 0.2s;">Hitung Budget Sekarang →</a>
+            <a href="{{ route('seasonal.index') }}" style="display:inline-block;background:rgba(255,255,255,0.1);color:white;padding:14px 24px;border-radius:10px;font-size:15px;font-weight:600;text-decoration:none;margin-left:10px;border:1px solid rgba(255,255,255,0.25);">🗓️ Panduan Musim</a>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+            <div style="background:rgba(255,255,255,0.08);border-radius:14px;padding:20px;border:1px solid rgba(255,255,255,0.1);">
+                <div style="font-size:28px;margin-bottom:8px;">🎒</div>
+                <div style="font-size:14px;font-weight:700;color:white;margin-bottom:4px;">Backpacker</div>
+                <div style="font-size:13px;color:rgba(255,255,255,0.6);">Rp 230–550rb/hari</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.08);border-radius:14px;padding:20px;border:1px solid rgba(255,255,255,0.1);">
+                <div style="font-size:28px;margin-bottom:8px;">🏡</div>
+                <div style="font-size:14px;font-weight:700;color:white;margin-bottom:4px;">Mid-range</div>
+                <div style="font-size:13px;color:rgba(255,255,255,0.6);">Rp 1,1–2,8jt/hari</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.08);border-radius:14px;padding:20px;border:1px solid rgba(255,255,255,0.1);">
+                <div style="font-size:28px;margin-bottom:8px;">💰</div>
+                <div style="font-size:14px;font-weight:700;color:white;margin-bottom:4px;">Budget</div>
+                <div style="font-size:13px;color:rgba(255,255,255,0.6);">Rp 575rb–1,3jt/hari</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.08);border-radius:14px;padding:20px;border:1px solid rgba(255,255,255,0.1);">
+                <div style="font-size:28px;margin-bottom:8px;">💎</div>
+                <div style="font-size:14px;font-weight:700;color:white;margin-bottom:4px;">Luxury</div>
+                <div style="font-size:13px;color:rgba(255,255,255,0.6);">Rp 3,5–15,5jt/hari</div>
+            </div>
+        </div>
+    </div>
+</section>
+
 <section class="section" style="background:var(--cream);">
     <div class="section-header-row section-header">
         <div><div class="section-tag">Komunitas</div><div class="section-title">Itinerary Terbaru dari Traveler</div></div>

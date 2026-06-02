@@ -94,6 +94,8 @@
         <li><a href="{{ route('transportation.index') }}" {{ request()->routeIs('transportation.*') ? 'class=active' : '' }}>Transportasi</a></li>
         @auth
         <li><a href="{{ route('bookings.my') }}"       {{ request()->routeIs('bookings.*','booking.*') ? 'class=active' : '' }}>Bookings</a></li>
+        <li><a href="{{ route('budget.index') }}"        {{ request()->routeIs('budget.*')           ? 'class=active' : '' }}>Budget</a></li>
+        <li><a href="{{ route('seasonal.index') }}"      {{ request()->routeIs('seasonal.*')         ? 'class=active' : '' }}>Musim</a></li>
         <li><a href="{{ route('itinerary.create') }}"  class="nav-cta">+ Buat Itinerary</a></li>
         @endauth
     </ul>

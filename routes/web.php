@@ -88,3 +88,11 @@ Route::middleware(['auth'])->group(function () {
 
 // Transportation search (public)
 Route::get('/transportation', [TransportationController::class, 'index'])->name('transportation.index');
+
+// ─── BUDGET CALCULATOR ───────────────────────────────────────
+Route::get('/budget-calculator', [\App\Http\Controllers\BudgetCalculatorController::class, 'index'])->name('budget.index');
+Route::get('/budget-calculator/result', [\App\Http\Controllers\BudgetCalculatorController::class, 'calculate'])->name('budget.calculate');
+
+// ─── SEASONAL GUIDE ──────────────────────────────────────────
+Route::get('/seasonal-guide', [\App\Http\Controllers\SeasonalGuideController::class, 'index'])->name('seasonal.index');
+Route::get('/seasonal-guide/show', [\App\Http\Controllers\SeasonalGuideController::class, 'show'])->name('seasonal.show');

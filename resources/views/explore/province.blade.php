@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', '{{ $province->name }} — NusantaraGuide')
+@section('title', $province->name . ' — NusantaraGuide')
 @section('styles')
 <style>
     .page-hero{background:linear-gradient(160deg,rgba(13,27,19,0.78) 0%,rgba(26,58,42,0.62) 100%),url('https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=1400&q=80') center/cover no-repeat;padding:64px 8% 52px;}
