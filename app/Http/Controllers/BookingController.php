@@ -95,7 +95,17 @@ class BookingController extends Controller
             ->latest()
             ->paginate(8);
 
-        return view('bookings.my', compact('bookings'));
+        $flightBookings = \App\Models\FlightBooking::with(['flight.airline','flight.origin','flight.destination'])
+            ->where('user_id', Auth::id())
+            ->latest()
+            ->get();
+
+        $trainBookings = \App\Models\TrainBooking::with(['train.origin','train.destination'])
+            ->where('user_id', Auth::id())
+            ->latest()
+            ->get();
+
+        return view('bookings.my', compact('bookings', 'flightBookings', 'trainBookings'));
     }
 
     /**

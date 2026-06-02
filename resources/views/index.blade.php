@@ -1,372 +1,84 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NusantaraGuide — Jelajahi Indonesia</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --forest: #1a3a2a;
-            --jade:   #2d6a4f;
-            --lime:   #74c69d;
-            --cream:  #fdf8f0;
-            --gold:   #e9c46a;
-            --coral:  #e76f51;
-            --ink:    #0d1b13;
-            --muted:  #6b7c72;
-            --white:  #ffffff;
-            --card-shadow: 0 4px 24px rgba(26,58,42,0.10);
-        }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--ink); }
-
-        /* ── NAVBAR ── */
-        .navbar {
-            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-            background: rgba(26,58,42,0.96);
-            backdrop-filter: blur(12px);
-            padding: 0 6%;
-            display: flex; align-items: center; justify-content: space-between;
-            height: 68px;
-            border-bottom: 1px solid rgba(116,198,157,0.15);
-        }
-        .logo {
-            font-family: 'Playfair Display', serif;
-            font-size: 22px; font-weight: 900;
-            color: var(--white); letter-spacing: -0.5px;
-        }
-        .logo span { color: var(--gold); }
-        .nav-links { display: flex; align-items: center; gap: 32px; list-style: none; }
-        .nav-links a {
-            color: rgba(255,255,255,0.8); text-decoration: none;
-            font-size: 14px; font-weight: 500; transition: color 0.2s;
-        }
-        .nav-links a:hover { color: var(--lime); }
-        .nav-links a.active { color: var(--lime); }
-        .nav-cta {
-            background: var(--coral); color: white !important;
-            padding: 8px 20px; border-radius: 6px;
-            font-weight: 600 !important; transition: background 0.2s !important;
-        }
-        .nav-cta:hover { background: #d4604a !important; }
-        .nav-user { display: flex; align-items: center; gap: 12px; }
-        .nav-user span { color: rgba(255,255,255,0.7); font-size: 14px; }
-        .logout-btn {
-            background: transparent; border: 1px solid rgba(255,255,255,0.3);
-            color: rgba(255,255,255,0.7); padding: 7px 16px; border-radius: 6px;
-            cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 13px;
-            transition: all 0.2s;
-        }
-        .logout-btn:hover { border-color: var(--coral); color: var(--coral); }
-
-        /* ── HERO ── */
-        .hero {
-            height: 100vh; min-height: 680px;
-            background: linear-gradient(160deg, rgba(13,27,19,0.72) 0%, rgba(26,58,42,0.55) 100%),
-                        url('https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=1600&q=80') center/cover no-repeat;
-            display: flex; flex-direction: column;
-            justify-content: center; padding: 100px 8% 0;
-            position: relative; overflow: hidden;
-        }
-        .hero::after {
-            content: ''; position: absolute; bottom: 0; left: 0; right: 0;
-            height: 120px;
-            background: linear-gradient(to top, var(--cream), transparent);
-        }
-        .hero-badge {
-            display: inline-flex; align-items: center; gap: 8px;
-            background: rgba(233,196,106,0.2); border: 1px solid rgba(233,196,106,0.4);
-            color: var(--gold); padding: 6px 16px; border-radius: 20px;
-            font-size: 13px; font-weight: 600; letter-spacing: 0.5px;
-            margin-bottom: 24px; width: fit-content;
-        }
-        .hero h1 {
-            font-family: 'Playfair Display', serif;
-            font-size: clamp(42px, 7vw, 80px); font-weight: 900;
-            color: white; line-height: 1.1; margin-bottom: 20px;
-            max-width: 700px;
-        }
-        .hero h1 em { color: var(--gold); font-style: normal; }
-        .hero p {
-            font-size: 18px; color: rgba(255,255,255,0.8);
-            max-width: 520px; line-height: 1.7; margin-bottom: 40px;
-        }
-        .hero-actions { display: flex; gap: 16px; flex-wrap: wrap; position: relative; z-index: 1; }
-        .btn-primary {
-            background: var(--coral); color: white;
-            padding: 16px 36px; border-radius: 8px; font-size: 16px;
-            font-weight: 600; text-decoration: none; transition: all 0.2s;
-            display: inline-block;
-        }
-        .btn-primary:hover { background: #d4604a; transform: translateY(-2px); }
-        .btn-outline {
-            background: rgba(255,255,255,0.1); color: white;
-            padding: 16px 36px; border-radius: 8px; font-size: 16px;
-            font-weight: 600; text-decoration: none; transition: all 0.2s;
-            border: 1px solid rgba(255,255,255,0.35);
-        }
-        .btn-outline:hover { background: rgba(255,255,255,0.2); }
-
-        /* ── STATS BAR ── */
-        .stats-bar {
-            background: var(--forest); color: white;
-            display: flex; justify-content: center; gap: 0;
-            overflow: hidden;
-        }
-        .stat-item {
-            padding: 20px 48px; text-align: center;
-            border-right: 1px solid rgba(255,255,255,0.08);
-        }
-        .stat-item:last-child { border-right: none; }
-        .stat-num { font-family: 'Playfair Display', serif; font-size: 28px; color: var(--gold); font-weight: 700; }
-        .stat-label { font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 2px; letter-spacing: 0.5px; text-transform: uppercase; }
-
-        /* ── SECTION HEADER ── */
-        .section { padding: 80px 8%; }
-        .section-header { margin-bottom: 48px; }
-        .section-tag {
-            font-size: 12px; font-weight: 600; letter-spacing: 2px;
-            text-transform: uppercase; color: var(--jade);
-            display: flex; align-items: center; gap: 8px; margin-bottom: 12px;
-        }
-        .section-tag::before { content: ''; width: 24px; height: 2px; background: var(--jade); }
-        .section-title {
-            font-family: 'Playfair Display', serif;
-            font-size: clamp(28px, 4vw, 42px); font-weight: 700; color: var(--forest);
-            line-height: 1.2;
-        }
-        .section-header-row {
-            display: flex; align-items: flex-end; justify-content: space-between;
-            gap: 20px; flex-wrap: wrap;
-        }
-        .see-all {
-            font-size: 14px; font-weight: 600; color: var(--jade);
-            text-decoration: none; display: flex; align-items: center; gap: 4px;
-            white-space: nowrap; transition: gap 0.2s;
-        }
-        .see-all:hover { gap: 8px; }
-
-        /* ── PROVINCE GRID ── */
-        .province-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-            gap: 20px;
-        }
-        .province-card {
-            border-radius: 16px; overflow: hidden;
-            position: relative; height: 200px;
-            cursor: pointer; text-decoration: none;
-            transition: transform 0.3s, box-shadow 0.3s;
-        }
-        .province-card:hover { transform: translateY(-6px); box-shadow: 0 20px 40px rgba(0,0,0,0.2); }
-        .province-card img {
-            width: 100%; height: 100%; object-fit: cover;
-            transition: transform 0.4s;
-        }
-        .province-card:hover img { transform: scale(1.05); }
-        .province-card-overlay {
-            position: absolute; inset: 0;
-            background: linear-gradient(to top, rgba(13,27,19,0.8) 0%, rgba(0,0,0,0.1) 60%);
-            padding: 20px;
-            display: flex; flex-direction: column; justify-content: flex-end;
-        }
-        .province-name {
-            font-family: 'Playfair Display', serif;
-            font-size: 20px; color: white; font-weight: 700;
-        }
-        .province-count { font-size: 13px; color: rgba(255,255,255,0.65); margin-top: 4px; }
-
-        /* ── PLACE CARDS ── */
-        .place-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 24px;
-        }
-        .place-card {
-            background: white; border-radius: 16px; overflow: hidden;
-            box-shadow: var(--card-shadow); transition: all 0.3s;
-            display: flex; flex-direction: column;
-        }
-        .place-card:hover { transform: translateY(-6px); box-shadow: 0 16px 40px rgba(26,58,42,0.15); }
-        .place-card img { width: 100%; height: 210px; object-fit: cover; }
-        .place-card-body { padding: 20px; flex: 1; display: flex; flex-direction: column; }
-        .place-meta {
-            display: flex; align-items: center; justify-content: space-between;
-            margin-bottom: 8px;
-        }
-        .place-cat {
-            font-size: 11px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase;
-            color: var(--jade); background: rgba(45,106,79,0.08);
-            padding: 3px 10px; border-radius: 20px;
-        }
-        .place-location { font-size: 12px; color: var(--muted); }
-        .place-card h3 { font-size: 18px; font-weight: 600; color: var(--ink); margin-bottom: 8px; }
-        .place-card p { font-size: 14px; color: var(--muted); line-height: 1.6; flex: 1; }
-        .place-card-footer {
-            display: flex; align-items: center; justify-content: space-between;
-            margin-top: 16px; padding-top: 16px; border-top: 1px solid #f0f0f0;
-        }
-        .place-price { font-size: 14px; font-weight: 600; color: var(--forest); }
-        .btn-view {
-            font-size: 13px; font-weight: 600; color: var(--jade);
-            text-decoration: none; transition: color 0.2s;
-        }
-        .btn-view:hover { color: var(--coral); }
-
-        /* ── ITINERARY FEED CARDS ── */
-        .itinerary-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-            gap: 24px;
-        }
-        .iti-card {
-            background: white; border-radius: 16px; overflow: hidden;
-            box-shadow: var(--card-shadow); text-decoration: none; color: inherit;
-            display: flex; flex-direction: column; transition: all 0.3s;
-        }
-        .iti-card:hover { transform: translateY(-6px); box-shadow: 0 16px 40px rgba(26,58,42,0.15); }
-        .iti-cover {
-            height: 200px; background: linear-gradient(135deg, var(--jade), var(--forest));
-            display: flex; align-items: center; justify-content: center;
-            font-size: 56px; position: relative; overflow: hidden;
-        }
-        .iti-cover img { width: 100%; height: 100%; object-fit: cover; }
-        .iti-style-badge {
-            position: absolute; top: 16px; right: 16px;
-            background: rgba(255,255,255,0.9); backdrop-filter: blur(4px);
-            padding: 5px 12px; border-radius: 20px;
-            font-size: 12px; font-weight: 600; color: var(--forest);
-        }
-        .iti-body { padding: 22px; flex: 1; display: flex; flex-direction: column; }
-        .iti-author {
-            display: flex; align-items: center; gap: 10px; margin-bottom: 14px;
-        }
-        .iti-avatar {
-            width: 32px; height: 32px; border-radius: 50%;
-            background: var(--lime); display: flex; align-items: center; justify-content: center;
-            font-size: 14px; font-weight: 700; color: var(--forest);
-        }
-        .iti-author-name { font-size: 13px; font-weight: 600; color: var(--forest); }
-        .iti-author-location { font-size: 12px; color: var(--muted); }
-        .iti-title {
-            font-family: 'Playfair Display', serif;
-            font-size: 18px; font-weight: 700; color: var(--ink);
-            margin-bottom: 8px; line-height: 1.3;
-        }
-        .iti-summary { font-size: 13px; color: var(--muted); line-height: 1.6; flex: 1; }
-        .iti-footer {
-            display: flex; align-items: center; justify-content: space-between;
-            margin-top: 16px; padding-top: 16px; border-top: 1px solid #f0f0f0;
-        }
-        .iti-stats { display: flex; gap: 16px; }
-        .iti-stat { font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 4px; }
-        .iti-duration { font-size: 12px; font-weight: 600; color: var(--jade); }
-
-        /* ── EVENTS ── */
-        .events-section { background: var(--forest); }
-        .events-section .section-tag { color: var(--lime); }
-        .events-section .section-tag::before { background: var(--lime); }
-        .events-section .section-title { color: white; }
-        .events-section .see-all { color: var(--lime); }
-        .event-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
-        .event-card {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(116,198,157,0.15);
-            border-radius: 14px; padding: 24px;
-            transition: all 0.3s;
-        }
-        .event-card:hover { background: rgba(255,255,255,0.08); border-color: var(--lime); }
-        .event-card h3 { font-size: 17px; font-weight: 600; color: white; margin-bottom: 10px; }
-        .event-card p { font-size: 14px; color: rgba(255,255,255,0.6); line-height: 1.6; margin-bottom: 16px; }
-        .event-badge {
-            display: inline-block; background: var(--coral); color: white;
-            padding: 5px 14px; border-radius: 20px; font-size: 12px; font-weight: 600;
-        }
-
-        /* ── CTA BANNER ── */
-        .cta-banner {
-            background: linear-gradient(135deg, var(--jade) 0%, var(--forest) 100%);
-            padding: 80px 8%; text-align: center; position: relative; overflow: hidden;
-        }
-        .cta-banner::before {
-            content: '🌴'; font-size: 180px; opacity: 0.06;
-            position: absolute; right: 5%; top: 50%; transform: translateY(-50%);
-        }
-        .cta-banner h2 {
-            font-family: 'Playfair Display', serif;
-            font-size: clamp(28px, 4vw, 42px); color: white; margin-bottom: 16px;
-        }
-        .cta-banner p { font-size: 17px; color: rgba(255,255,255,0.75); margin-bottom: 36px; max-width: 500px; margin-left: auto; margin-right: auto; }
-
-        /* ── FOOTER ── */
-        footer {
-            background: var(--ink); color: rgba(255,255,255,0.5);
-            padding: 48px 8%; text-align: center; font-size: 14px;
-        }
-        footer strong { color: var(--lime); }
-
-        /* ── FAVORITES ── */
-        .favorites-section {
-            background: white; border-bottom: 1px solid #f0ede8;
-        }
-
-        /* ── SEARCH BAR ── */
-        .search-wrap {
-            max-width: 620px; margin-top: 0;
-            display: flex; gap: 0;
-            background: white; border-radius: 12px;
-            overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.2);
-        }
-        .search-wrap input {
-            flex: 1; padding: 16px 20px; font-size: 15px; border: none; outline: none;
-            font-family: 'DM Sans', sans-serif; color: var(--ink);
-        }
-        .search-wrap button {
-            background: var(--coral); color: white; border: none; padding: 0 28px;
-            font-size: 15px; font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif;
-            transition: background 0.2s;
-        }
-        .search-wrap button:hover { background: #d4604a; }
-
-        @media (max-width: 768px) {
-            .section { padding: 60px 5%; }
-            .nav-links { display: none; }
-            .stats-bar { flex-wrap: wrap; }
-            .stat-item { flex: 1; min-width: 120px; padding: 16px 20px; }
-        }
-    </style>
-</head>
-<body>
-
-<!-- ── NAVBAR ── -->
-<nav class="navbar">
-    <div class="logo">Nusantara<span>Guide</span></div>
-    <ul class="nav-links">
-        <li><a href="{{ route('home') }}" class="active">Home</a></li>
-        <li><a href="{{ route('explore') }}">Explore</a></li>
-        <li><a href="{{ route('places.browse') }}">Tempat</a></li>
-        <li><a href="{{ route('itinerary.index') }}">Itinerary</a></li>
-        @auth
-            <li><a href="{{ route('itinerary.create') }}" class="nav-cta">+ Buat Itinerary</a></li>
-        @endauth
-    </ul>
-    <div class="nav-user">
-        @auth
-            <span>Halo, {{ explode(' ', Auth::user()->name)[0] }}!</span>
-            <form action="{{ route('logout') }}" method="POST">
-                @csrf
-                <button type="submit" class="logout-btn">Logout</button>
-            </form>
-        @else
-            <a href="{{ route('login') }}" class="logout-btn" style="text-decoration:none; display:inline-block;">Login</a>
-            <a href="{{ route('register') }}" class="nav-cta" style="text-decoration:none; padding:8px 20px; background:var(--coral); color:white; border-radius:6px; font-size:14px; font-weight:600;">Daftar</a>
-        @endauth
-    </div>
-</nav>
-
-<!-- ── HERO ── -->
+@extends('layouts.app')
+@section('title', 'NusantaraGuide — Jelajahi Indonesia')
+@section('styles')
+<style>
+    .hero{min-height:calc(100vh - 64px);background:linear-gradient(160deg,rgba(13,27,19,0.72) 0%,rgba(26,58,42,0.55) 100%),url('https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=1600&q=80') center/cover no-repeat;display:flex;flex-direction:column;justify-content:center;padding:100px 8% 60px;position:relative;overflow:hidden;}
+    .hero::after{content:'';position:absolute;bottom:0;left:0;right:0;height:120px;background:linear-gradient(to top,var(--cream),transparent);}
+    .hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(233,196,106,0.2);border:1px solid rgba(233,196,106,0.4);color:var(--gold);padding:6px 16px;border-radius:20px;font-size:13px;font-weight:600;letter-spacing:0.5px;margin-bottom:24px;width:fit-content;}
+    .hero h1{font-family:'Playfair Display',serif;font-size:clamp(42px,7vw,80px);font-weight:900;color:white;line-height:1.1;margin-bottom:20px;max-width:700px;}
+    .hero h1 em{color:var(--gold);font-style:normal;}
+    .hero p{font-size:18px;color:rgba(255,255,255,0.8);max-width:520px;line-height:1.7;margin-bottom:40px;}
+    .hero-actions{display:flex;gap:16px;flex-wrap:wrap;position:relative;z-index:1;}
+    .btn-primary{background:var(--coral);color:white;padding:16px 36px;border-radius:8px;font-size:16px;font-weight:600;text-decoration:none;transition:all 0.2s;display:inline-block;}
+    .btn-primary:hover{background:#d4604a;transform:translateY(-2px);}
+    .btn-outline{background:rgba(255,255,255,0.1);color:white;padding:16px 36px;border-radius:8px;font-size:16px;font-weight:600;text-decoration:none;transition:all 0.2s;border:1px solid rgba(255,255,255,0.35);}
+    .btn-outline:hover{background:rgba(255,255,255,0.2);}
+    .search-wrap{max-width:620px;margin-bottom:32px;display:flex;gap:0;background:white;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.2);}
+    .search-wrap input{flex:1;padding:16px 20px;font-size:15px;border:none;outline:none;font-family:'DM Sans',sans-serif;color:var(--ink);}
+    .search-wrap button{background:var(--coral);color:white;border:none;padding:0 28px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background 0.2s;}
+    .search-wrap button:hover{background:#d4604a;}
+    .stats-bar{background:var(--forest);color:white;display:flex;justify-content:center;gap:0;overflow:hidden;}
+    .stat-item{padding:20px 48px;text-align:center;border-right:1px solid rgba(255,255,255,0.08);}
+    .stat-item:last-child{border-right:none;}
+    .stat-num{font-family:'Playfair Display',serif;font-size:28px;color:var(--gold);font-weight:700;}
+    .stat-label{font-size:12px;color:rgba(255,255,255,0.5);margin-top:2px;letter-spacing:0.5px;text-transform:uppercase;}
+    .section{padding:80px 8%;}
+    .section + .section{padding-top:40px;}
+    .section-header{margin-bottom:48px;}
+    .section-tag{font-size:12px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--jade);display:flex;align-items:center;gap:8px;margin-bottom:12px;}
+    .section-tag::before{content:'';width:24px;height:2px;background:var(--jade);}
+    .section-title{font-family:'Playfair Display',serif;font-size:clamp(28px,4vw,42px);font-weight:700;color:var(--forest);line-height:1.2;}
+    .section-header-row{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap;}
+    .see-all{font-size:14px;font-weight:600;color:var(--jade);text-decoration:none;display:flex;align-items:center;gap:4px;white-space:nowrap;transition:gap 0.2s;}
+    .see-all:hover{gap:8px;}
+    .province-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:20px;}
+    .province-card{border-radius:16px;overflow:hidden;position:relative;height:200px;cursor:pointer;text-decoration:none;transition:transform 0.3s,box-shadow 0.3s;background:var(--forest);}
+    .province-card:hover{transform:translateY(-6px);box-shadow:0 20px 40px rgba(0,0,0,0.2);}
+    .province-card img{width:100%;height:100%;object-fit:cover;transition:transform 0.4s;}
+    .province-card:hover img{transform:scale(1.05);}
+    .province-card-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(13,27,19,0.8) 0%,rgba(0,0,0,0.1) 60%);padding:20px;display:flex;flex-direction:column;justify-content:flex-end;}
+    .province-name{font-family:'Playfair Display',serif;font-size:20px;color:white;font-weight:700;}
+    .province-count{font-size:13px;color:rgba(255,255,255,0.65);margin-top:4px;}
+    .place-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:24px;}
+    .place-card{background:white;border-radius:16px;overflow:hidden;box-shadow:var(--card-shadow);transition:all 0.3s;display:flex;flex-direction:column;}
+    .place-card:hover{transform:translateY(-6px);box-shadow:0 16px 40px rgba(26,58,42,0.15);}
+    .place-card img{width:100%;height:210px;object-fit:cover;}
+    .place-card-body{padding:20px;flex:1;display:flex;flex-direction:column;}
+    .place-meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+    .place-cat{font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--jade);background:rgba(45,106,79,0.08);padding:3px 10px;border-radius:20px;}
+    .place-location{font-size:12px;color:var(--muted);}
+    .place-card h3{font-size:18px;font-weight:600;color:var(--ink);margin-bottom:8px;}
+    .place-card p{font-size:14px;color:var(--muted);line-height:1.6;flex:1;}
+    .place-card-footer{display:flex;align-items:center;justify-content:space-between;margin-top:16px;padding-top:16px;border-top:1px solid #f0f0f0;}
+    .place-price{font-size:14px;font-weight:600;color:var(--forest);}
+    .btn-view{font-size:13px;font-weight:600;color:var(--jade);text-decoration:none;transition:color 0.2s;}
+    .btn-view:hover{color:var(--coral);}
+    .itinerary-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:24px;}
+    .iti-card{background:white;border-radius:16px;overflow:hidden;box-shadow:var(--card-shadow);text-decoration:none;color:inherit;display:flex;flex-direction:column;transition:all 0.3s;}
+    .iti-card:hover{transform:translateY(-6px);box-shadow:0 16px 40px rgba(26,58,42,0.15);}
+    .iti-cover{height:200px;background:linear-gradient(135deg,var(--jade),var(--forest));display:flex;align-items:center;justify-content:center;font-size:56px;position:relative;overflow:hidden;}
+    .iti-cover img{width:100%;height:100%;object-fit:cover;}
+    .iti-style-badge{position:absolute;top:16px;right:16px;background:rgba(255,255,255,0.9);backdrop-filter:blur(4px);padding:5px 12px;border-radius:20px;font-size:12px;font-weight:600;color:var(--forest);}
+    .iti-body{padding:22px;flex:1;display:flex;flex-direction:column;}
+    .iti-author{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+    .iti-avatar{width:32px;height:32px;border-radius:50%;background:var(--lime);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:var(--forest);}
+    .iti-author-name{font-size:13px;font-weight:600;color:var(--forest);}
+    .iti-author-location{font-size:12px;color:var(--muted);}
+    .iti-title{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:var(--ink);margin-bottom:8px;line-height:1.3;}
+    .iti-summary{font-size:13px;color:var(--muted);line-height:1.6;flex:1;}
+    .iti-footer{display:flex;align-items:center;justify-content:space-between;margin-top:16px;padding-top:16px;border-top:1px solid #f0f0f0;}
+    .iti-stats{display:flex;gap:16px;}
+    .iti-stat{font-size:13px;color:var(--muted);}
+    .iti-duration{font-size:12px;font-weight:600;color:var(--jade);}
+    .cta-banner{background:linear-gradient(135deg,var(--jade) 0%,var(--forest) 100%);padding:80px 8%;text-align:center;position:relative;overflow:hidden;}
+    .cta-banner::before{content:'🌴';font-size:180px;opacity:0.06;position:absolute;right:5%;top:50%;transform:translateY(-50%);}
+    .cta-banner h2{font-family:'Playfair Display',serif;font-size:clamp(28px,4vw,42px);color:white;margin-bottom:16px;}
+    .cta-banner p{font-size:17px;color:rgba(255,255,255,0.75);margin-bottom:36px;max-width:500px;margin-left:auto;margin-right:auto;}
+    .favorites-section{background:white;border-bottom:1px solid #f0ede8;}
+    @media(max-width:768px){.section{padding:60px 5%;}.stat-item{flex:1;min-width:120px;padding:16px 20px;}.stats-bar{flex-wrap:wrap;}}
+</style>
+@endsection
+@section('content')
 <section class="hero">
     <div class="hero-badge">🌏 17.000+ Pulau Menanti Kamu</div>
     <h1>Jelajahi <em>Indonesia</em>,<br>Temukan Ceritamu</h1>
@@ -383,7 +95,6 @@
     </div>
 </section>
 
-<!-- ── STATS ── -->
 <div class="stats-bar">
     <div class="stat-item"><div class="stat-num">34</div><div class="stat-label">Provinsi</div></div>
     <div class="stat-item"><div class="stat-num">500+</div><div class="stat-label">Destinasi</div></div>
@@ -391,7 +102,6 @@
     <div class="stat-item"><div class="stat-num">10K+</div><div class="stat-label">Traveler</div></div>
 </div>
 
-<!-- ── FAVORITES (if logged in) ── -->
 @if(Auth::check() && isset($favorites) && $favorites->count() > 0)
 <section class="section favorites-section">
     <div class="section-header">
@@ -403,15 +113,11 @@
         <div class="place-card">
             <img src="{{ asset($place->image_url ?? 'images/default.jpg') }}" alt="{{ $place->name }}">
             <div class="place-card-body">
-                <div class="place-meta">
-                    <span class="place-cat">{{ $place->category->name ?? 'Wisata' }}</span>
-                </div>
+                <div class="place-meta"><span class="place-cat">{{ $place->category->name ?? 'Wisata' }}</span></div>
                 <h3>{{ $place->name }}</h3>
                 <p>{{ Str::limit($place->description, 90) }}</p>
                 <div class="place-card-footer">
-                    <span class="place-price">
-                        @if($place->price_start == 0) Gratis @else Rp {{ number_format($place->price_start,0,',','.') }} @endif
-                    </span>
+                    <span class="place-price">@if($place->price_start == 0)Gratis @else Rp {{ number_format($place->price_start,0,',','.') }}@endif</span>
                     <a href="{{ route('place.show', $place->id) }}" class="btn-view">Lihat →</a>
                 </div>
             </div>
@@ -421,21 +127,15 @@
 </section>
 @endif
 
-<!-- ── EXPLORE PROVINCES ── -->
 <section class="section">
     <div class="section-header-row section-header">
-        <div>
-            <div class="section-tag">Destinasi</div>
-            <div class="section-title">Jelajahi Nusantara</div>
-        </div>
+        <div><div class="section-tag">Destinasi</div><div class="section-title">Jelajahi Nusantara</div></div>
         <a href="{{ route('explore') }}" class="see-all">Lihat Semua Provinsi →</a>
     </div>
     <div class="province-grid">
         @forelse($provinces as $province)
         <a href="{{ route('province.show', $province->slug) }}" class="province-card">
-            <img src="{{ asset($province->image_url ?? 'https://source.unsplash.com/400x300/?indonesia,'.$province->name) }}" 
-                 alt="{{ $province->name }}"
-                 onerror="this.src='https://images.unsplash.com/photo-1552733407-5d5c46c3bb3b?w=400&q=60'">
+            <img src="{{ asset($province->image_url ?? 'https://images.unsplash.com/photo-1552733407-5d5c46c3bb3b?w=400&q=60') }}" alt="{{ $province->name }}" onerror="this.src='https://images.unsplash.com/photo-1552733407-5d5c46c3bb3b?w=400&q=60'">
             <div class="province-card-overlay">
                 <div class="province-name">{{ $province->name }}</div>
                 <div class="province-count">{{ $province->regions_count ?? 0 }} wilayah</div>
@@ -447,20 +147,15 @@
     </div>
 </section>
 
-<!-- ── FEATURED PLACES ── -->
-<section class="section" style="background: var(--cream); padding-top: 0;">
+<section class="section" style="background:white;margin-top:0;">
     <div class="section-header-row section-header">
-        <div>
-            <div class="section-tag">Populer</div>
-            <div class="section-title">Tempat Paling Disukai</div>
-        </div>
+        <div><div class="section-tag">Populer</div><div class="section-title">Tempat Paling Disukai</div></div>
         <a href="{{ route('places.browse') }}" class="see-all">Lihat Semua →</a>
     </div>
     <div class="place-grid">
         @forelse($featuredPlaces as $place)
         <div class="place-card">
-            <img src="{{ asset($place->image_url ?? 'images/default.jpg') }}" alt="{{ $place->name }}"
-                 onerror="this.style.background='#e8f4ee'; this.style.display='none'">
+            <img src="{{ asset($place->image_url ?? 'images/default.jpg') }}" alt="{{ $place->name }}" onerror="this.style.display='none'">
             <div class="place-card-body">
                 <div class="place-meta">
                     <span class="place-cat">{{ $place->category->name ?? '' }}</span>
@@ -469,9 +164,7 @@
                 <h3>{{ $place->name }}</h3>
                 <p>{{ Str::limit($place->description, 90) }}</p>
                 <div class="place-card-footer">
-                    <span class="place-price">
-                        @if($place->price_start == 0) Gratis @else Rp {{ number_format($place->price_start,0,',','.') }} @endif
-                    </span>
+                    <span class="place-price">@if($place->price_start == 0)Gratis @else Rp {{ number_format($place->price_start,0,',','.') }}@endif</span>
                     <a href="{{ route('place.show', $place->id) }}" class="btn-view">Lihat Detail →</a>
                 </div>
             </div>
@@ -482,29 +175,21 @@
     </div>
 </section>
 
-<!-- ── ITINERARY FEED ── -->
-<section class="section" style="background: white;">
+<section class="section" style="background:var(--cream);">
     <div class="section-header-row section-header">
-        <div>
-            <div class="section-tag">Komunitas</div>
-            <div class="section-title">Itinerary Terbaru dari Traveler</div>
-        </div>
+        <div><div class="section-tag">Komunitas</div><div class="section-title">Itinerary Terbaru dari Traveler</div></div>
         <a href="{{ route('itinerary.index') }}" class="see-all">Lihat Semua →</a>
     </div>
     <div class="itinerary-grid">
         @forelse($latestItineraries as $iti)
         <a href="{{ route('itinerary.show', $iti->slug) }}" class="iti-card">
             <div class="iti-cover">
-                @if($iti->cover_image)
-                    <img src="{{ asset('storage/'.$iti->cover_image) }}" alt="{{ $iti->title }}">
-                @else
-                    🗺️
-                @endif
+                @if($iti->cover_image)<img src="{{ asset('storage/'.$iti->cover_image) }}" alt="{{ $iti->title }}">@else 🗺️@endif
                 <span class="iti-style-badge">{{ $iti->travel_style_label }}</span>
             </div>
             <div class="iti-body">
                 <div class="iti-author">
-                    <div class="iti-avatar">{{ strtoupper(substr($iti->user->name, 0, 1)) }}</div>
+                    <div class="iti-avatar">{{ strtoupper(substr($iti->user->name,0,1)) }}</div>
                     <div>
                         <div class="iti-author-name">{{ $iti->user->name }}</div>
                         <div class="iti-author-location">📍 {{ $iti->region->name ?? 'Indonesia' }}</div>
@@ -522,49 +207,18 @@
             </div>
         </a>
         @empty
-        <div style="grid-column:1/-1; text-align:center; padding:40px; color:var(--muted);">
+        <div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--muted);">
             <p style="font-size:18px;">Belum ada itinerary. <a href="{{ route('itinerary.create') }}" style="color:var(--jade);">Jadilah yang pertama!</a></p>
         </div>
         @endforelse
     </div>
 </section>
 
-<!-- ── EVENTS ── -->
-@if(isset($events) && $events->count() > 0)
-<section class="section events-section">
-    <div class="section-header">
-        <div class="section-tag">Acara</div>
-        <div class="section-title">Event Mendatang</div>
-    </div>
-    <div class="event-grid">
-        @foreach($events as $event)
-        <div class="event-card">
-            <h3>{{ $event->name }}</h3>
-            <p>{{ Str::limit($event->description, 120) }}</p>
-            <span class="event-badge">
-                📅 {{ \Carbon\Carbon::parse($event->start_date)->isoFormat('D MMM YYYY') }}
-            </span>
-        </div>
-        @endforeach
-    </div>
-</section>
-@endif
-
-<!-- ── CTA BANNER ── -->
 @guest
 <div class="cta-banner">
     <h2>Punya pengalaman traveling?<br>Bagikan itinerarymu!</h2>
     <p>Bantu ribuan traveler lain merencanakan perjalanan impian mereka dengan berbagi cerita perjalananmu.</p>
-    <a href="{{ route('register') }}" class="btn-primary" style="font-size:15px; padding:14px 36px;">Daftar Gratis Sekarang →</a>
+    <a href="{{ route('register') }}" class="btn-primary" style="font-size:15px;padding:14px 36px;">Daftar Gratis Sekarang →</a>
 </div>
 @endguest
-
-<!-- ── FOOTER ── -->
-<footer>
-    <p style="font-size:20px; margin-bottom:8px; font-family:'Playfair Display',serif; color:white;">NusantaraGuide</p>
-    <p>© {{ date('Y') }} NusantaraGuide — Panduan wisata seluruh <strong>Indonesia</strong></p>
-    <p style="margin-top:8px; font-size:12px;">Dibuat dengan ❤️ untuk para penjelajah Nusantara</p>
-</footer>
-
-</body>
-</html>
+@endsection

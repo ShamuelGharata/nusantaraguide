@@ -10,17 +10,21 @@ class ItineraryPost extends Model
 
     protected $fillable = [
         'user_id', 'title', 'slug', 'cover_image', 'summary', 'body',
-        'region_id', 'duration_days', 'estimated_budget', 'travel_style',
-        'status', 'views',
+        'region_id', 'duration_days', 'estimated_budget', 'actual_budget',
+        'travel_style', 'status', 'views', 'is_verified',
+        'trip_rating', 'trip_tips',
     ];
 
     protected $casts = [
         'estimated_budget' => 'decimal:2',
+        'actual_budget'    => 'decimal:2',
         'duration_days'    => 'integer',
         'views'            => 'integer',
+        'is_verified'      => 'boolean',
+        'trip_rating'      => 'integer',
     ];
 
-    // ── RELATIONSHIPS ──────────────────────────────────────────
+    // ── RELATIONSHIPS ──────────────────────────────────────
 
     public function user()
     {
@@ -34,7 +38,8 @@ class ItineraryPost extends Model
 
     public function days()
     {
-        return $this->hasMany(ItineraryDay::class, 'itinerary_id')->orderBy('day_number');
+        return $this->hasMany(ItineraryDay::class, 'itinerary_id')
+                    ->orderBy('day_number');
     }
 
     public function tags()
@@ -59,26 +64,25 @@ class ItineraryPost extends Model
                     ->withPivot('saved_at');
     }
 
-    // ── SCOPES ────────────────────────────────────────────────
+    public function copies()
+    {
+        return $this->hasMany(ItineraryCopy::class, 'original_itinerary_id');
+    }
+
+    // ── SCOPES ────────────────────────────────────────────
 
     public function scopePublished($query)
     {
         return $query->where('status', 'published');
     }
 
-    // ── ACCESSORS ─────────────────────────────────────────────
+    // ── ACCESSORS ─────────────────────────────────────────
 
-    /**
-     * Formatted budget display, e.g. "Rp 500K" or "Rp 1,2 Jt"
-     */
     public function getBudgetLabelAttribute(): string
     {
-        if (!$this->estimated_budget) return 'Tidak disebutkan';
-
-        $b = (int) $this->estimated_budget;
-        if ($b >= 1_000_000) {
-            return 'Rp ' . number_format($b / 1_000_000, 1) . ' Jt';
-        }
+        $b = (int) ($this->actual_budget ?? $this->estimated_budget);
+        if (!$b) return 'Tidak disebutkan';
+        if ($b >= 1_000_000) return 'Rp ' . number_format($b / 1_000_000, 1) . ' Jt';
         return 'Rp ' . number_format($b / 1_000, 0) . 'K';
     }
 
@@ -90,10 +94,23 @@ class ItineraryPost extends Model
             'mid-range'  => '🏡 Mid-range',
             'luxury'     => '💎 Luxury',
             'family'     => '👨‍👩‍👧 Keluarga',
-            'solo'        => '🧍 Solo',
+            'solo'       => '🧍 Solo',
             'couple'     => '👫 Couple',
             'group'      => '👥 Grup',
             default      => $this->travel_style,
         };
+    }
+
+    // Auto-marks as verified if any stop links a real booking
+    public function checkAndMarkVerified(): void
+    {
+        $hasRealBooking = $this->days()
+            ->with('stops')
+            ->get()
+            ->flatMap(fn($d) => $d->stops)
+            ->filter(fn($s) => $s->flight_booking_id || $s->hotel_booking_id)
+            ->isNotEmpty();
+
+        $this->update(['is_verified' => $hasRealBooking]);
     }
 }
