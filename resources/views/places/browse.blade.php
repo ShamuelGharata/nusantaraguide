@@ -2,10 +2,11 @@
 @section('title', 'Jelajahi Tempat — NusantaraGuide')
 @section('styles')
 <style>
+
     .page-hero{background:linear-gradient(135deg,var(--forest) 0%,var(--jade) 100%);padding:52px 8% 44px;}
     .page-hero h1{font-family:'Playfair Display',serif;font-size:clamp(28px,5vw,48px);color:white;font-weight:900;margin-bottom:10px;}
     .page-hero p{font-size:16px;color:rgba(255,255,255,0.7);max-width:500px;}
-    .search-section{background:white;padding:24px 8%;border-bottom:1px solid #eee;position:sticky;top:64px;z-index:50;box-shadow:0 2px 12px rgba(0,0,0,0.06);}
+    body .search-section{background:white;padding:24px 8%;border-bottom:1px solid #eee;position:sticky;top:64px;z-index:50;box-shadow:0 2px 12px rgba(0,0,0,0.06);}
     .search-row{display:flex;gap:10px;flex-wrap:wrap;}
     .search-input-wrap{display:flex;flex:1;min-width:240px;background:var(--cream);border:1.5px solid #e0dbd2;border-radius:10px;overflow:hidden;transition:border-color 0.2s;}
     .search-input-wrap:focus-within{border-color:var(--jade);}
@@ -21,23 +22,33 @@
     .cat-pill{white-space:nowrap;padding:7px 18px;border-radius:20px;border:1.5px solid #e0dbd2;font-size:13px;text-decoration:none;color:var(--muted);transition:all 0.2s;background:white;font-weight:500;}
     .cat-pill:hover{border-color:var(--jade);color:var(--jade);}
     .cat-pill.active{background:var(--forest);color:white;border-color:var(--forest);}
-    .main{padding:40px 8%;}
+    .main{padding:40px 8%;width:100%;}
     .results-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;flex-wrap:wrap;gap:12px;}
+    /* Hide Laravel's "Showing X to Y" text */
+    .pagination-wrap > div > p { display: none !important; }
+    .pagination-wrap > p { display: none !important; }
+    p.showing-text { display: none !important; }
     .results-info{font-size:15px;color:var(--muted);}
     .results-info strong{color:var(--ink);}
-    .place-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:24px;margin-bottom:48px;}
-    .place-card{background:white;border-radius:16px;overflow:hidden;box-shadow:var(--card-shadow);transition:all 0.3s;display:flex;flex-direction:column;}
-    .place-card:hover{transform:translateY(-6px);box-shadow:0 16px 40px rgba(26,58,42,0.15);}
+    .place-grid {
+        display: grid !important;
+        grid-template-columns: repeat(3, minmax(0,1fr)) !important;
+        gap: 24px !important;
+        margin-bottom: 48px !important;
+        width: 100% !important;
+    }
+    body .place-card{background:white;border-radius:16px;overflow:hidden;box-shadow:var(--card-shadow);transition:all 0.3s;display:flex;flex-direction:column;}
+    body .place-card:hover{transform:translateY(-6px);box-shadow:0 16px 40px rgba(26,58,42,0.15);}
     .place-card-img{position:relative;}
     .place-card-img img{width:100%;height:200px;object-fit:cover;display:block;}
     .place-cat-badge{position:absolute;top:12px;left:12px;background:rgba(255,255,255,0.92);backdrop-filter:blur(4px);padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;color:var(--forest);}
     .place-fav-btn{position:absolute;top:12px;right:12px;background:rgba(255,255,255,0.9);border:none;border-radius:50%;width:36px;height:36px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;}
     .place-fav-btn:hover{transform:scale(1.15);}
-    .place-card-body{padding:18px 20px;flex:1;display:flex;flex-direction:column;}
+    body .place-card-body{padding:18px 20px;flex:1;display:flex;flex-direction:column;}
     .place-location{font-size:12px;color:var(--muted);margin-bottom:6px;}
     .place-card-body h3{font-size:17px;font-weight:600;color:var(--ink);margin-bottom:6px;line-height:1.3;}
     .place-card-body p{font-size:13px;color:var(--muted);line-height:1.6;flex:1;}
-    .place-card-footer{display:flex;align-items:center;justify-content:space-between;margin-top:14px;padding-top:14px;border-top:1px solid #f5f5f5;}
+    body .place-card-footer{display:flex;align-items:center;justify-content:space-between;margin-top:14px;padding-top:14px;border-top:1px solid #f5f5f5;}
     .place-price{font-size:14px;font-weight:700;color:var(--forest);}
     .place-rating{font-size:13px;color:var(--gold);font-weight:600;}
     .btn-detail{font-size:13px;font-weight:600;color:white;background:var(--jade);padding:7px 16px;border-radius:8px;text-decoration:none;transition:background 0.2s;}
@@ -46,6 +57,8 @@
     .empty-state .icon{font-size:56px;margin-bottom:16px;}
     .empty-state h3{font-family:'Playfair Display',serif;font-size:22px;color:var(--ink);margin-bottom:8px;}
     .empty-state p{font-size:15px;color:var(--muted);}
+    /* Override old pagination-wrapper styles */
+    .pagination-wrapper { display: none !important; }
     .pagination-wrap{display:flex;justify-content:center;margin-top:32px;}
     .pagination-wrap nav{width:100%;}
     .pagination-wrap nav > div:first-child{display:none;}
@@ -54,7 +67,14 @@
     .pagination-wrap a:hover{border-color:var(--jade);color:var(--jade);}
     .pagination-wrap [aria-current="page"] span,.pagination-wrap span.font-bold{background:var(--jade);color:white;border-color:var(--jade);}
     .pagination-wrap span[aria-disabled="true"],.pagination-wrap span.cursor-default{color:#ccc;border-color:#eee;cursor:default;}
-    @media(max-width:768px){.search-row{flex-direction:column;}.main{padding:28px 5%;}.place-grid{grid-template-columns:1fr;}}
+    @media(max-width:768px){.search-row{flex-direction:column;}.main{padding:28px 5%;}.place-grid{grid-template-columns:1fr !important;}}
+    /* Hide "Showing X to Y of Z results" paragraph from Laravel pagination */
+    .pagination-wrap nav > div:first-child,
+    .pagination-wrap nav p,
+    .pagination-wrap > nav > div:first-child { display: none !important; }
+    /* Ensure pagination numbers are centered and full width */
+    .pagination-wrap nav { width: 100%; display: flex; justify-content: center; }
+    .pagination-wrap nav > div:last-child { display: flex; justify-content: center; width: 100%; }
 </style>
 @endsection
 @section('content')
@@ -133,6 +153,12 @@
         <div class="empty-state"><div class="icon">🔍</div><h3>Tidak ada tempat ditemukan</h3><p>Coba ubah kata kunci atau filter pencarianmu.</p></div>
         @endforelse
     </div>
-    <div class="pagination-wrap">{{ $places->withQueryString()->links() }}</div>
+    @php
+        // Remove "Showing X to Y" from pagination by using simple links
+        $paginator = $places->withQueryString();
+    @endphp
+    <div class="pagination-wrap">
+        {{ $paginator->links() }}
+    </div>
 </div>
 @endsection

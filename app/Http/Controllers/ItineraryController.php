@@ -6,296 +6,402 @@ use App\Models\ItineraryPost;
 use App\Models\ItineraryDay;
 use App\Models\ItineraryStop;
 use App\Models\ItineraryCopy;
+use App\Models\ItineraryComment;
 use App\Models\Region;
-use App\Models\Tag;
 use App\Models\Place;
+use App\Models\Tag;
 use App\Models\FlightBooking;
 use App\Models\Booking;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class ItineraryController extends Controller
 {
-    // ── PUBLIC FEED ───────────────────────────────────────────
-
+    // ── INDEX ──────────────────────────────────────────────────
     public function index(Request $request)
     {
-        $query = ItineraryPost::with(['user', 'region.province', 'tags'])
-            ->where('status', 'published')
-            ->withCount(['likes', 'comments', 'copies'])
-            ->orderByDesc('created_at');
+        $query = ItineraryPost::with(['user','region.province','tags'])
+            ->where('status','published')
+            ->withCount(['likes','comments','copies']);
 
-        if ($request->filled('region'))  $query->where('region_id', $request->region);
-        if ($request->filled('tag'))     $query->whereHas('tags', fn($q) => $q->where('slug', $request->tag));
-        if ($request->filled('style'))   $query->where('travel_style', $request->style);
-        if ($request->filled('max_days')) $query->where('duration_days', '<=', $request->max_days);
-        if ($request->filled('verified')) $query->where('is_verified', 1);
-        if ($request->filled('search'))  $query->where(function($q) use ($request) {
-            $q->where('title', 'like', '%'.$request->search.'%')
-              ->orWhere('summary', 'like', '%'.$request->search.'%');
-        });
+        if ($request->search) {
+            $query->where(function($q) use ($request) {
+                $q->where('title','like',"%{$request->search}%")
+                  ->orWhere('summary','like',"%{$request->search}%");
+            });
+        }
+        if ($request->style)  $query->where('travel_style', $request->style);
+        if ($request->days)   $query->where('duration_days', $request->days);
 
-        $itineraries = $query->paginate(9)->withQueryString();
-        $regions     = Region::with('province')->orderBy('name')->get();
-        $tags        = Tag::all();
+        $sort = $request->sort ?? 'latest';
+        match($sort) {
+            'popular'  => $query->orderByDesc('likes_count'),
+            'most_copied' => $query->orderByDesc('copies_count'),
+            default    => $query->latest(),
+        };
 
+        $itineraries = $query->paginate(12)->withQueryString();
+        $regions = Region::with('province')->orderBy('name')->get();
+        $tags    = Tag::orderBy('name')->get();
         return view('itineraries.index', compact('itineraries', 'regions', 'tags'));
     }
 
-    // ── SHOW SINGLE POST ──────────────────────────────────────
-
-    public function show($slug)
-    {
-        $itinerary = ItineraryPost::with([
-            'user',
-            'region.province',
-            'tags',
-            'days.stops.place',
-            'days.stops.flightBooking.flight.airline',
-            'days.stops.flightBooking.flight.origin',
-            'days.stops.flightBooking.flight.destination',
-            'days.stops.hotelBooking.place',
-            'days.stops.hotelBooking.room',
-            'comments.user',
-        ])
-        ->where('slug', $slug)
-        ->where('status', 'published')
-        ->firstOrFail();
-
-        $itinerary->increment('views');
-
-        $isLiked  = Auth::check() ? $itinerary->likes()->where('user_id', Auth::id())->exists() : false;
-        $isSaved  = Auth::check() ? $itinerary->savedByUsers()->where('user_id', Auth::id())->exists() : false;
-        $isCopied = Auth::check() ? $itinerary->copies()->where('user_id', Auth::id())->exists() : false;
-
-        // Calculate total cost from all stops
-        $totalCost = $itinerary->days->flatMap(fn($d) => $d->stops)->sum(fn($s) => $s->display_cost ?? 0);
-
-        $related = ItineraryPost::where('region_id', $itinerary->region_id)
-            ->where('id', '!=', $itinerary->id)
-            ->where('status', 'published')
-            ->withCount('likes')
-            ->latest()->take(3)->get();
-
-        return view('itineraries.show', compact(
-            'itinerary', 'isLiked', 'isSaved', 'isCopied', 'totalCost', 'related'
-        ));
-    }
-
-    // ── CREATE FORM ───────────────────────────────────────────
-
+    // ── CREATE FORM ────────────────────────────────────────────
     public function create()
     {
         $regions = Region::with('province')->orderBy('name')->get();
-        $tags    = Tag::all();
+        $tags    = Tag::orderBy('name')->get();
+        $places  = Place::select('id','name','address','price_start','category_id')->orderBy('name')->get();
 
-        // Load user's existing bookings to link
-        $flightBookings = FlightBooking::with(['flight.airline', 'flight.origin', 'flight.destination'])
-            ->where('user_id', Auth::id())
-            ->where('status', '!=', 'cancelled')
-            ->latest()->get();
+        // Grab user's flight bookings for linking
+        $flightBookingsJson = [];
+        $hotelBookingsJson  = [];
+        $placesJson = $places->map(fn($p) => ['id'=>$p->id,'label'=>$p->name]);
 
-        $hotelBookings = Booking::with(['place', 'room'])
-            ->where('user_id', Auth::id())
-            ->where('status', '!=', 'cancelled')
-            ->latest()->get();
+        if (Auth::check()) {
+            $fb = FlightBooking::where('user_id', Auth::id())
+                ->whereIn('status',['confirmed','pending'])
+                ->with('flight')
+                ->get();
+            $flightBookingsJson = $fb->map(fn($b) => [
+                'id'             => $b->id,
+                'airline'        => optional($b->flight)->airline ?? '',
+                'flight_number'  => optional($b->flight)->flight_number ?? '',
+                'route'          => (optional($b->flight)->origin_airport_id ?? '') . ' → ' .
+                                   (optional($b->flight)->destination_airport_id ?? ''),
+                'departure_time' => optional($b->flight)->departure_time
+                                   ? \Carbon\Carbon::parse($b->flight->departure_time)->format('H:i')
+                                   : '',
+                'arrival_time'   => optional($b->flight)->arrival_time
+                                   ? \Carbon\Carbon::parse($b->flight->arrival_time)->format('H:i')
+                                   : '',
+                'price'          => (float) ($b->total_price ?? 0),
+                'passengers'     => $b->passengers ?? 1,
+                'seat_class'     => $b->seat_class ?? 'economy',
+                'label'          => (optional($b->flight)->airline ?? '') . ' ' .
+                                   (optional($b->flight)->flight_number ?? '') . ' — ' .
+                                   (optional($b->flight)->origin_airport_id ?? '') . '→' .
+                                   (optional($b->flight)->destination_airport_id ?? '') .
+                                   ' (' . $b->travel_date . ')' .
+                                   ($b->status === 'pending' ? ' [Menunggu]' : ' ✓'),
+            ]);
 
-        $places = Place::with(['region', 'category'])->orderBy('name')->get();
+            $hb = Booking::where('user_id', Auth::id())
+                ->whereIn('status',['confirmed','pending'])
+                ->with('place','room')
+                ->get();
+            $hotelBookingsJson = $hb->map(fn($b) => [
+                'id'         => $b->id,
+                'hotel_name' => optional($b->place)->name ?? '',
+                'room_name'  => optional($b->room)->name ?? '',
+                'check_in'   => $b->check_in ?? '',
+                'check_out'  => $b->check_out ?? '',
+                'guests'     => $b->guests ?? 1,
+                'price'      => (float) ($b->total_price ?? 0),
+                'label'      => (optional($b->place)->name ?? '') . ' — ' .
+                               (optional($b->room)->name ?? '') . ' (' .
+                               ($b->check_in ?? '') . ' s/d ' . ($b->check_out ?? '') . ')' .
+                               ($b->status === 'pending' ? ' [Menunggu]' : ' ✓'),
+            ]);
+        }
 
-        // Pre-format data as simple arrays for JavaScript
-        $flightBookingsJson = $flightBookings->map(fn($b) => [
-            'id'    => $b->id,
-            'label' => $b->flight->airline->name . ' ' . $b->flight->flight_number . ': '
-                     . $b->flight->origin->city . ' → ' . $b->flight->destination->city
-                     . ' (' . $b->travel_date->format('d M Y') . ')',
-            'price' => (float) $b->total_price,
-        ])->values()->toArray();
-
-        $hotelBookingsJson = $hotelBookings->map(fn($b) => [
-            'id'    => $b->id,
-            'label' => $b->place->name . ' - ' . $b->room->name
-                     . ' (' . $b->check_in->format('d M') . ' – ' . $b->check_out->format('d M Y') . ')',
-            'price' => (float) $b->total_price,
-        ])->values()->toArray();
-
-        $placesJson = $places->map(fn($p) => [
-            'id'    => $p->id,
-            'label' => $p->name . ($p->region ? ' (' . $p->region->name . ')' : ''),
-        ])->values()->toArray();
+        // Train bookings
+        $trainBookingsJson = [];
+        if (Auth::check()) {
+            $tb = \App\Models\TrainBooking::where('user_id', Auth::id())
+                ->whereIn('status',['confirmed','pending'])
+                ->with(['train.origin','train.destination'])
+                ->get();
+            $trainBookingsJson = $tb->map(fn($b) => [
+                'id'             => $b->id,
+                'train_name'     => optional($b->train)->name ?? '',
+                'route'          => (optional(optional($b->train)->origin)->city ?? 
+                                    optional(optional($b->train)->originStation)->name ?? 
+                                    optional($b->train)->origin_id ?? '') . 
+                                   ' → ' .
+                                   (optional(optional($b->train)->destination)->city ?? 
+                                    optional(optional($b->train)->destinationStation)->name ?? 
+                                    optional($b->train)->destination_id ?? ''),
+                'departure_time' => optional($b->train)->departure_time
+                                   ? \Carbon\Carbon::parse($b->train->departure_time)->format('H:i')
+                                   : '',
+                'arrival_time'   => optional($b->train)->arrival_time
+                                   ? \Carbon\Carbon::parse($b->train->arrival_time)->format('H:i')
+                                   : '',
+                'seat_class'     => $b->seat_class ?? 'economy',
+                'passengers'     => $b->passengers ?? 1,
+                'price'          => (float) ($b->total_price ?? 0),
+                'label'          => (optional($b->train)->name ?? '') . ' — ' .
+                                   (optional(optional($b->train)->origin)->city ?? optional($b->train)->origin_id ?? '') . '→' .
+                                   (optional(optional($b->train)->destination)->city ?? optional($b->train)->destination_id ?? '') .
+                                   ' (' . $b->travel_date . ')' .
+                                   ($b->status === 'pending' ? ' [Menunggu]' : ' ✓'),
+            ]);
+        }
 
         return view('itineraries.create', compact(
-            'regions', 'tags', 'flightBookings', 'hotelBookings', 'places',
-            'flightBookingsJson', 'hotelBookingsJson', 'placesJson'
+            'regions','tags','flightBookingsJson','hotelBookingsJson',
+            'trainBookingsJson','placesJson'
         ));
     }
 
-    // ── STORE NEW ITINERARY ───────────────────────────────────
-
+    // ── STORE ──────────────────────────────────────────────────
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'title'            => 'required|string|max:255',
-            'summary'          => 'required|string|max:500',
-            'region_id'        => 'nullable|exists:regions,id',
-            'duration_days'    => 'required|integer|min:1|max:30',
-            'estimated_budget' => 'nullable|numeric|min:0',
-            'actual_budget'    => 'nullable|numeric|min:0',
-            'travel_style'     => 'required|in:backpacker,budget,mid-range,luxury,family,solo,couple,group',
-            'status'           => 'required|in:draft,published',
-            'trip_rating'      => 'nullable|integer|min:1|max:5',
-            'trip_tips'        => 'nullable|string|max:1000',
-            'tags'             => 'nullable|array',
-            'tags.*'           => 'exists:tags,id',
-            'days'             => 'required|array',
-            'days.*.title'     => 'nullable|string|max:255',
-            'days.*.notes'     => 'nullable|string',
-            'days.*.stops'     => 'nullable|array',
+        // Parse currency shorthand (3jt, 500rb, etc.) before validation
+        $parseCurrency = function($val) {
+            if (!$val) return 0;
+            $val = strtolower(trim($val));
+            if (preg_match('/^([\d.,]+)\s*j(t|uta)?$/', $val, $m)) {
+                return (int) round((float) str_replace(',', '.', $m[1]) * 1000000);
+            }
+            if (preg_match('/^([\d.,]+)\s*r(b|ibu)?$/', $val, $m)) {
+                return (int) round((float) str_replace(',', '.', $m[1]) * 1000);
+            }
+            return (int) preg_replace('/[^0-9]/', '', $val);
+        };
+        $request->merge([
+            'estimated_budget' => $parseCurrency($request->estimated_budget),
+            'actual_budget'    => $parseCurrency($request->actual_budget),
         ]);
 
-        $slug = Str::slug($validated['title']) . '-' . Str::random(6);
+        $request->validate([
+            'title'         => 'required|string|max:255',
+            'summary'       => 'required|string|max:500',
+            'duration_days' => 'required|integer|min:1|max:30',
+            'travel_style'  => 'required|string',
+            'status'        => 'in:published,draft',
+        ]);
 
+        // Cover image
         $coverPath = null;
         if ($request->hasFile('cover_image')) {
-            $coverPath = $request->file('cover_image')->store('itineraries', 'public');
+            $coverPath = $request->file('cover_image')->store('itineraries','public');
         }
 
-        DB::transaction(function() use ($validated, $slug, $coverPath, $request) {
-            $itinerary = ItineraryPost::create([
-                'user_id'          => Auth::id(),
-                'title'            => $validated['title'],
-                'slug'             => $slug,
-                'summary'          => $validated['summary'],
-                'body'             => $request->input('body'),
-                'region_id'        => $validated['region_id'] ?? null,
-                'duration_days'    => $validated['duration_days'],
-                'estimated_budget' => $validated['estimated_budget'] ?? null,
-                'actual_budget'    => $validated['actual_budget'] ?? null,
-                'travel_style'     => $validated['travel_style'],
-                'status'           => $validated['status'],
-                'cover_image'      => $coverPath,
-                'trip_rating'      => $validated['trip_rating'] ?? null,
-                'trip_tips'        => $validated['trip_tips'] ?? null,
-            ]);
+        // Create post
+        $slug = Str::slug($request->title) . '-' . Str::random(5);
+        $post = ItineraryPost::create([
+            'user_id'          => Auth::id(),
+            'region_id'        => $request->region_id ?: null,
+            'title'            => $request->title,
+            'slug'             => $slug,
+            'summary'          => $request->summary,
+            'body'             => $request->body,
+            'trip_tips'        => $request->trip_tips,
+            'travel_style'     => $request->travel_style,
+            'duration_days'    => $request->duration_days,
+            'estimated_budget' => $request->estimated_budget,
+            'actual_budget'    => $request->actual_budget,
+            'trip_rating'      => $request->trip_rating,
+            'cover_image'      => $coverPath,
+            'status'           => $request->status ?? 'published',
+            'is_verified'      => false,
+        ]);
 
-            if (!empty($validated['tags'])) {
-                $itinerary->tags()->sync($validated['tags']);
-            }
+        // Attach tags
+        if ($request->tags) {
+            $post->tags()->sync($request->tags);
+        }
 
-            // Save days and stops
-            foreach ($validated['days'] as $dayIndex => $dayData) {
+        // Create days & stops
+        if ($request->days) {
+            foreach ($request->days as $dayData) {
                 $day = ItineraryDay::create([
-                    'itinerary_id' => $itinerary->id,
-                    'day_number'   => $dayIndex + 1,
-                    'title'        => $dayData['title'] ?? null,
-                    'notes'        => $dayData['notes'] ?? null,
+                            'itinerary_id'      => $post->id,
+                    'day_number'        => $dayData['number'] ?? 1,
+                    'title'             => $dayData['title'] ?? null,
+                    'notes'             => $dayData['notes'] ?? null,
                 ]);
 
                 if (!empty($dayData['stops'])) {
-                    foreach ($dayData['stops'] as $stopIndex => $stopData) {
+                    $order = 1;
+                    foreach ($dayData['stops'] as $stopData) {
+                        // Parse cost values from smart currency input
+                        $stopCost      = (int) preg_replace('/[^0-9]/', '', $stopData['cost'] ?? '0');
+                        $transportCost = (int) preg_replace('/[^0-9]/', '', $stopData['transport_cost'] ?? '0');
+                        // Skip stops with no meaningful data
+                        if (empty($stopData['type']) && empty($stopData['custom_title'])) continue;
+
                         ItineraryStop::create([
-                            'day_id'             => $day->id,
-                            'stop_type'          => $stopData['type'] ?? 'custom',
-                            'place_id'           => $stopData['place_id'] ?? null,
-                            'flight_booking_id'  => $stopData['flight_booking_id'] ?? null,
-                            'hotel_booking_id'   => $stopData['hotel_booking_id'] ?? null,
-                            'custom_place_name'  => $stopData['custom_place_name'] ?? null,
-                            'custom_title'       => $stopData['custom_title'] ?? null,
-                            'custom_description' => $stopData['custom_description'] ?? null,
-                            'visit_order'        => $stopIndex + 1,
-                            'visit_time'         => $stopData['visit_time'] ?? null,
-                            'duration_minutes'   => $stopData['duration_minutes'] ?? null,
-                            'tip'                => $stopData['tip'] ?? null,
-                            'cost'               => $stopData['cost'] ?? null,
+                            'day_id'              => $day->id,
+                            'stop_type'           => $stopData['type'] ?? 'custom',
+                            'place_id'            => ($stopData['place_id'] ?? null) ?: null,
+                            'flight_booking_id'   => ($stopData['flight_booking_id'] ?? null) ?: null,
+                            'hotel_booking_id'    => ($stopData['hotel_booking_id'] ?? null) ?: null,
+                            'train_booking_id'    => ($stopData['train_booking_id'] ?? null) ?: null,
+                            'custom_title'        => $stopData['custom_title'] ?? null,
+                            'custom_place_name'   => $stopData['custom_place_name'] ?? null,
+                            'custom_description'  => $stopData['custom_description'] ?? null,
+                            'tip'                 => $stopData['tip'] ?? null,
+                            'cost'                => $stopCost,
+                            'time_start'          => ($stopData['time_start'] ?? null) ?: null,
+                            'time_end'            => ($stopData['time_end'] ?? null) ?: null,
+                            'transport_mode'      => $stopData['transport_mode'] ?? null,
+                            'transport_cost'      => $transportCost,
+                            'visit_order'         => $order++,
                         ]);
                     }
                 }
+
+                // Auto-verify if linked to real bookings
+                $hasBooking = collect($dayData['stops'] ?? [])
+                    ->filter(fn($s) => !empty($s['flight_booking_id']) || !empty($s['hotel_booking_id']))
+                    ->isNotEmpty();
+                if ($hasBooking) {
+                    $post->update(['is_verified' => true]);
+                }
             }
+        }
 
-            // Auto-verify if any real bookings are linked
-            $itinerary->checkAndMarkVerified();
-        });
+        $msg = $request->status === 'draft'
+            ? 'Draft itinerary disimpan.'
+            : 'Itinerary berhasil dipublikasikan!';
 
-        return redirect()->route('itinerary.index')
-            ->with('success', 'Itinerary berhasil dibuat!');
+        return redirect()->route('itinerary.show', $post->slug)
+            ->with('success', $msg);
     }
 
-    // ── MY ITINERARIES ────────────────────────────────────────
+    // ── SHOW ───────────────────────────────────────────────────
+    public function show($slug)
+    {
+        $iti = ItineraryPost::with([
+            'user','region.province','tags',
+            'days.stops.place','days.stops.flightBooking','days.stops.hotelBooking',
+        ])
+        ->where('slug',$slug)
+        ->where('status','published')
+        ->firstOrFail();
 
+        $iti->increment('views');
+
+        $isLiked = Auth::check()
+            ? \DB::table('itinerary_likes')
+                ->where('itinerary_id',$iti->id)
+                ->where('user_id',Auth::id())
+                ->exists()
+            : false;
+        $isSaved = Auth::check()
+            ? ItineraryCopy::where('original_itinerary_id',$iti->id)
+                ->where('user_id',Auth::id())
+                ->exists()
+            : false;
+
+        $comments   = ItineraryComment::where('itinerary_id',$iti->id)->latest()->get();
+        $likesCount = \DB::table('itinerary_likes')->where('itinerary_id',$iti->id)->count();
+
+        $itinerary = $iti; // alias for the view
+
+        // Calculate total cost from all stops
+        $totalCost = $iti->days->flatMap(fn($d) => $d->stops)->sum('cost');
+
+        // Bookable stops (linked to real bookings)
+        $bookableStops = $iti->days->flatMap(fn($d) => $d->stops)
+            ->filter(fn($s) => $s->flight_booking_id || $s->hotel_booking_id || $s->train_booking_id);
+
+        // isCopied = same as isSaved for now
+        $isCopied = $isSaved;
+
+        // Related itineraries (same region)
+        $related = ItineraryPost::where('status','published')
+            ->where('id','!=',$iti->id)
+            ->where('region_id', $iti->region_id)
+            ->withCount(['likes','comments'])
+            ->take(3)->get();
+
+        return view('itineraries.show', compact(
+            'iti','itinerary','isLiked','isSaved','isCopied',
+            'comments','likesCount','totalCost','bookableStops','related'
+        ));
+    }
+
+    // ── MY ITINERARIES ─────────────────────────────────────────
     public function myPosts()
     {
         $itineraries = ItineraryPost::where('user_id', Auth::id())
-            ->withCount(['likes', 'comments', 'copies'])
+            ->withCount(['likes','comments','copies'])
             ->latest()->paginate(10);
 
-        $copiedItineraries = ItineraryCopy::with(['originalItinerary.user', 'originalItinerary.region'])
-            ->where('user_id', Auth::id())
+        $copiedItineraries = ItineraryCopy::where('user_id', Auth::id())
+            ->with(['originalItinerary.user','originalItinerary.region.province'])
             ->latest('copied_at')->get();
 
-        return view('itineraries.my', compact('itineraries', 'copiedItineraries'));
+        return view('itineraries.my', compact('itineraries','copiedItineraries'));
     }
 
-    // ── SOCIAL ACTIONS ────────────────────────────────────────
-
-    public function toggleLike($id)
+    // ── LIKE ───────────────────────────────────────────────────
+    public function like($id)
     {
-        $itinerary = ItineraryPost::findOrFail($id);
-        $itinerary->likes()->toggle(Auth::id());
-        return back();
+        $existing = ItineraryLike::where('itinerary_id',$id)
+            ->where('user_id',Auth::id())->first();
+        if ($existing) {
+            $existing->delete();
+            $liked = false;
+        } else {
+            ItineraryLike::create(['itinerary_id'=>$id,'user_id'=>Auth::id()]);
+            $liked = true;
+        }
+        $count = ItineraryLike::where('itinerary_id',$id)->count();
+        return response()->json(['liked'=>$liked,'count'=>$count]);
     }
 
-    public function toggleSave($id)
-    {
-        $itinerary = ItineraryPost::findOrFail($id);
-        $itinerary->savedByUsers()->toggle(Auth::id());
-        return back();
-    }
-
-    public function comment(Request $request, $id)
-    {
-        $request->validate(['comment' => 'required|string|max:1000']);
-        $itinerary = ItineraryPost::findOrFail($id);
-        $itinerary->comments()->create([
-            'user_id' => Auth::id(),
-            'comment' => $request->comment,
-        ]);
-        return back()->with('success', 'Komentar berhasil ditambahkan!');
-    }
-
-    // ── COPY ITINERARY ────────────────────────────────────────
-
+    // ── COPY / SAVE ────────────────────────────────────────────
     public function copy($id)
     {
-        $itinerary = ItineraryPost::where('status', 'published')->findOrFail($id);
-
-        // Prevent copying own itinerary
-        if ($itinerary->user_id === Auth::id()) {
-            return back()->with('error', 'Kamu tidak bisa menyalin itinerary sendiri.');
+        $existing = ItineraryCopy::where('itinerary_id',$id)
+            ->where('user_id',Auth::id())->first();
+        if ($existing) {
+            $existing->delete();
+            $saved = false;
+        } else {
+            ItineraryCopy::create([
+                'itinerary_id'      => $id,
+                'user_id'           => Auth::id(),
+                'copied_at'         => now(),
+            ]);
+            $saved = true;
         }
-
-        ItineraryCopy::firstOrCreate([
-            'original_itinerary_id' => $itinerary->id,
-            'user_id'               => Auth::id(),
-        ], [
-            'copied_at' => now(),
-        ]);
-
-        return redirect()->route('itinerary.my')
-            ->with('success', 'Itinerary "' . $itinerary->title . '" berhasil disalin ke koleksimu!');
+        return response()->json(['saved'=>$saved]);
     }
 
-    // ── DELETE ────────────────────────────────────────────────
+    // ── COMMENT ────────────────────────────────────────────────
+    public function comment(Request $request, $id)
+    {
+        // Parse currency shorthand (3jt, 500rb, etc.) before validation
+        $parseCurrency = function($val) {
+            if (!$val) return 0;
+            $val = strtolower(trim($val));
+            if (preg_match('/^([\d.,]+)\s*j(t|uta)?$/', $val, $m)) {
+                return (int) round((float) str_replace(',', '.', $m[1]) * 1000000);
+            }
+            if (preg_match('/^([\d.,]+)\s*r(b|ibu)?$/', $val, $m)) {
+                return (int) round((float) str_replace(',', '.', $m[1]) * 1000);
+            }
+            return (int) preg_replace('/[^0-9]/', '', $val);
+        };
+        $request->merge([
+            'estimated_budget' => $parseCurrency($request->estimated_budget),
+            'actual_budget'    => $parseCurrency($request->actual_budget),
+        ]);
 
+        $request->validate(['content'=>'required|string|max:1000']);
+        ItineraryComment::create([
+            'itinerary_id'      => $id,
+            'user_id'           => Auth::id(),
+            'comment'           => $request->content,
+        ]);
+        return back()->with('success','Komentar ditambahkan.');
+    }
+
+    // ── DESTROY ────────────────────────────────────────────────
     public function destroy($slug)
     {
-        $itinerary = ItineraryPost::where('slug', $slug)
-            ->where('user_id', Auth::id())
+        $iti = ItineraryPost::where('slug',$slug)
+            ->where('user_id',Auth::id())
             ->firstOrFail();
-
-        $itinerary->delete();
-
+        $iti->delete();
         return redirect()->route('itinerary.my')
-            ->with('success', 'Itinerary berhasil dihapus.');
+            ->with('success','Itinerary berhasil dihapus.');
     }
 }

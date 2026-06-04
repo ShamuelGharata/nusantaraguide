@@ -2,37 +2,26 @@
 @section('title', 'Pesan Pesawat — NusantaraGuide')
 @section('styles')
 <style>
-    .page-wrap{max-width:1000px;margin:48px auto;padding:0 24px 80px;}
-    .breadcrumb{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:8px;margin-bottom:28px;flex-wrap:wrap;}
     .breadcrumb a{color:var(--jade);text-decoration:none;}
-    .page-title{font-family:'Playfair Display',serif;font-size:32px;font-weight:900;color:var(--forest);margin-bottom:32px;}
-    .booking-layout{display:grid;grid-template-columns:1fr 360px;gap:32px;}
-    .form-card{background:white;border-radius:18px;padding:32px;box-shadow:var(--card-shadow);}
     .form-card h2{font-size:18px;font-weight:700;color:var(--forest);margin-bottom:24px;padding-bottom:16px;border-bottom:2px solid var(--cream);}
-    .form-group{margin-bottom:20px;}
     .form-group label{display:block;font-size:13px;font-weight:600;color:var(--ink);margin-bottom:7px;}
     .form-group input,.form-group select{width:100%;padding:12px 16px;border:1.5px solid #e0dbd2;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--ink);background:var(--cream);outline:none;transition:border-color 0.2s;}
     .form-group input:focus,.form-group select:focus{border-color:var(--jade);background:white;}
-    .error-msg{color:var(--coral);font-size:12px;margin-top:5px;}
-    .submit-btn{width:100%;padding:15px;background:var(--coral);color:white;border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:16px;font-weight:700;cursor:pointer;transition:all 0.2s;margin-top:8px;}
     .submit-btn:hover{background:#d4604a;transform:translateY(-2px);}
-    .summary-card{background:white;border-radius:18px;padding:28px;box-shadow:var(--card-shadow);position:sticky;top:88px;}
     .summary-card h3{font-size:16px;font-weight:700;color:var(--forest);margin-bottom:20px;}
     .flight-icon-big{width:100%;height:120px;background:linear-gradient(135deg,#0d1b35,#1a2d6a);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:56px;margin-bottom:18px;}
     .airline-name{font-size:16px;font-weight:700;color:var(--ink);margin-bottom:4px;}
     .flight-num{font-size:13px;color:var(--muted);margin-bottom:16px;}
-    .summary-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f5f5f5;font-size:14px;}
     .summary-row:last-of-type{border-bottom:none;}
     .summary-row .label{color:var(--muted);}
     .summary-row .value{font-weight:600;color:var(--ink);}
     .class-info{display:inline-block;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;margin-bottom:16px;}
     .economy{background:rgba(116,198,157,0.15);color:var(--jade);}
     .business{background:rgba(233,196,106,0.2);color:#a0760a;}
-    .total-box{background:linear-gradient(135deg,#0d1b35,#1a2d6a);color:white;border-radius:12px;padding:18px;margin-top:16px;}
     .total-box .total-label{font-size:12px;opacity:0.7;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;}
     .total-box .total-value{font-family:'Playfair Display',serif;font-size:26px;font-weight:900;}
     .total-box .total-note{font-size:12px;opacity:0.6;margin-top:4px;}
-    @media(max-width:800px){.booking-layout{grid-template-columns:1fr;}.summary-card{position:static;}}
+    @media(max-width:800px){}
 </style>
 @endsection
 @section('content')

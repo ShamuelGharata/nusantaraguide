@@ -2,11 +2,12 @@
 @section('title', 'Panduan Musim Wisata Indonesia — NusantaraGuide')
 @section('styles')
 <style>
-    .hero{background:linear-gradient(135deg,#0d1b35 0%,#1a2d6a 100%);padding:56px 8% 48px;text-align:center;}
+
+    body .hero{background:linear-gradient(135deg,#0d1b35 0%,#1a2d6a 100%);padding:56px 8% 48px;text-align:center;}
     .hero h1{font-family:'Playfair Display',serif;font-size:clamp(28px,5vw,48px);color:white;font-weight:900;margin-bottom:10px;}
     .hero p{font-size:16px;color:rgba(255,255,255,0.75);max-width:560px;margin:0 auto 32px;}
-    .picker-wrap{max-width:700px;margin:0 auto;}
-    .picker-card{background:white;border-radius:16px;padding:28px;box-shadow:0 8px 40px rgba(0,0,0,0.15);}
+    body .picker-wrap{max-width:700px;margin:0 auto;}
+    body .picker-card{background:white;border-radius:16px;padding:28px;box-shadow:0 8px 40px rgba(0,0,0,0.15);}
     .picker-card h3{font-size:16px;font-weight:700;color:var(--ink);margin-bottom:16px;}
     .picker-form{display:flex;gap:12px;}
     .picker-select{flex:1;padding:12px 16px;border:1.5px solid #e0dbd2;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:15px;color:var(--ink);background:var(--cream);outline:none;}
@@ -18,7 +19,7 @@
     .section-title{font-family:'Playfair Display',serif;font-size:clamp(22px,3vw,32px);color:var(--forest);margin-bottom:28px;}
     .month-now{font-size:15px;color:var(--muted);margin-bottom:32px;}
     .month-now strong{color:var(--jade);}
-    .quick-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:20px;margin-bottom:48px;}
+    body .quick-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:20px;margin-bottom:48px;}
     .quick-card{background:white;border-radius:16px;overflow:hidden;box-shadow:var(--card-shadow);text-decoration:none;color:inherit;display:block;transition:all 0.3s;}
     .quick-card:hover{transform:translateY(-5px);box-shadow:0 12px 32px rgba(26,58,42,0.15);}
     .qc-img{height:160px;position:relative;overflow:hidden;background:linear-gradient(135deg,var(--jade),var(--forest));}

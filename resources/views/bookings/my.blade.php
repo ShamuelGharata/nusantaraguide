@@ -4,38 +4,20 @@
 
 @section('styles')
 <style>
-    .page-hero{background:linear-gradient(135deg,var(--forest),var(--jade));padding:48px 8% 40px;}
     .page-hero h1{font-family:'Playfair Display',serif;font-size:36px;color:white;font-weight:900;margin-bottom:6px;}
     .page-hero p{font-size:15px;color:rgba(255,255,255,0.7);}
     .tab-bar{background:white;border-bottom:2px solid #f0ede8;padding:0 8%;display:flex;position:sticky;top:64px;z-index:50;}
     .tab-btn{padding:16px 24px;font-size:14px;font-weight:600;color:var(--muted);background:none;border:none;border-bottom:3px solid transparent;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;margin-bottom:-2px;}
     .tab-btn.active{color:var(--jade);border-bottom-color:var(--jade);}
-    .main{padding:40px 8%;max-width:1100px;}
-    .alert-success{background:rgba(116,198,157,0.15);border:1px solid var(--lime);color:var(--jade);padding:14px 18px;border-radius:10px;font-size:14px;margin-bottom:24px;}
     .tab-content{display:none;}
     .tab-content.active{display:block;}
     .booking-list{display:flex;flex-direction:column;gap:16px;}
-    .booking-card{background:white;border-radius:16px;box-shadow:var(--card-shadow);overflow:hidden;display:grid;grid-template-columns:80px 1fr auto;transition:box-shadow 0.2s;}
     .booking-card:hover{box-shadow:0 8px 32px rgba(26,58,42,0.15);}
-    .booking-card-icon{background:linear-gradient(135deg,var(--forest),var(--jade));display:flex;align-items:center;justify-content:center;font-size:28px;}
     .booking-card-icon.flight-icon{background:linear-gradient(135deg,#0d1b35,#1a2d6a);}
     .booking-card-icon.train-icon{background:linear-gradient(135deg,#1a1a35,#2d1a6a);}
-    .booking-card-body{padding:18px 22px;}
-    .booking-main-title{font-size:16px;font-weight:700;color:var(--ink);margin-bottom:3px;}
-    .booking-sub{font-size:13px;color:var(--jade);font-weight:600;margin-bottom:10px;}
-    .booking-meta{display:flex;gap:16px;flex-wrap:wrap;}
     .booking-meta-item{font-size:13px;color:var(--muted);}
     .booking-meta-item strong{color:var(--ink);}
-    .booking-card-right{padding:18px 20px;display:flex;flex-direction:column;align-items:flex-end;justify-content:space-between;min-width:170px;border-left:1px solid #f5f5f5;}
-    .status-pill{padding:5px 14px;border-radius:20px;font-size:12px;font-weight:700;white-space:nowrap;}
-    .booking-total{font-family:'Playfair Display',serif;font-size:19px;font-weight:900;color:var(--forest);}
-    .booking-code{font-size:11px;color:var(--muted);letter-spacing:0.5px;margin-top:2px;}
-    .booking-actions{display:flex;flex-direction:column;gap:6px;width:100%;}
-    .btn-sm{padding:8px 14px;border-radius:8px;font-size:12px;font-weight:600;text-align:center;text-decoration:none;cursor:pointer;font-family:'DM Sans',sans-serif;border:none;transition:all 0.2s;display:block;}
-    .btn-sm-primary{background:var(--jade);color:white;}
-    .btn-sm-danger{background:white;color:var(--coral);border:1.5px solid var(--coral);}
     .btn-sm-danger:hover{background:var(--coral);color:white;}
-    .empty-state{text-align:center;padding:60px 20px;background:white;border-radius:16px;}
     .empty-state .icon{font-size:48px;margin-bottom:14px;}
     .empty-state h3{font-family:'Playfair Display',serif;font-size:20px;color:var(--ink);margin-bottom:6px;}
     .empty-state p{font-size:14px;color:var(--muted);margin-bottom:20px;}
@@ -100,7 +82,7 @@
             <div class="booking-card">
                 <div class="booking-card-icon flight-icon">✈️</div>
                 <div class="booking-card-body">
-                    <div class="booking-main-title">{{ $b->flight->origin->city }} → {{ $b->flight->destination->city }}</div>
+                    <div class="booking-main-title">{{ optional($b->flight->origin)->city ?? '-' }} → {{ optional($b->flight->destination)->city ?? '-' }}</div>
                     <div class="booking-sub">{{ $b->flight->airline->name }} · {{ $b->flight->flight_number }}</div>
                     <div class="booking-meta">
                         <div class="booking-meta-item">📅 <strong>{{ $b->travel_date->isoFormat('D MMM Y') }}</strong></div>
@@ -135,7 +117,7 @@
                 <div class="booking-card-icon train-icon">🚆</div>
                 <div class="booking-card-body">
                     <div class="booking-main-title">{{ $b->train->name }}</div>
-                    <div class="booking-sub">{{ $b->train->origin->city }} → {{ $b->train->destination->city }}</div>
+                    <div class="booking-sub">{{ optional($b->train->origin)->city ?? '-' }} → {{ optional($b->train->destination)->city ?? '-' }}</div>
                     <div class="booking-meta">
                         <div class="booking-meta-item">📅 <strong>{{ $b->travel_date->isoFormat('D MMM Y') }}</strong></div>
                         <div class="booking-meta-item">🕐 {{ substr($b->train->departure_time,0,5) }}</div>

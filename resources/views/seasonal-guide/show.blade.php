@@ -2,8 +2,9 @@
 @section('title', 'Panduan Musim ' . $province->name . ' — NusantaraGuide')
 @section('styles')
 <style>
+
     /* HERO */
-    .hero{
+    body .hero{
         background:linear-gradient(160deg,rgba(13,27,19,0.82) 0%,rgba(26,58,42,0.68) 100%),
                    url('{{ asset($province->image_url ?? "") }}') center/cover no-repeat;
         padding:64px 8% 52px;color:white;min-height:300px;
@@ -290,13 +291,13 @@
             </div>
         </div>
 
-        <button class="apply-btn" onclick="recalculate()">
+        <button class="apply-btn" onclick="recalculate(); scrollToResult()">
             ✨ &nbsp;Temukan Waktu Terbaikmu
         </button>
     </div>
 
     <!-- RESULT BANNER -->
-    <div id="resultBanner" class="result-banner great" style="display:none;">
+    <div id="resultBanner" class="result-banner great" style="display:none;" data-scroll-target="true">
         <span class="rb-icon" id="bannerIcon">🎉</span>
         <div>
             <div class="rb-title" id="bannerTitle">Bulan terbaik untukmu</div>
@@ -637,6 +638,15 @@ function _renderDetail(num) {
         ${festHTML}
         <div class="detail-tip">💡 ${tip}</div>
     `;
+}
+
+function scrollToResult() {
+    setTimeout(() => {
+        const banner = document.getElementById('resultBanner');
+        if (banner) {
+            banner.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }, 100);
 }
 
 document.addEventListener('DOMContentLoaded', () => {

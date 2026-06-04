@@ -2,15 +2,9 @@
 @section('title', 'Konfirmasi Pesawat — NusantaraGuide')
 @section('styles')
 <style>
-    .page-wrap{max-width:680px;margin:48px auto;padding:0 24px 80px;}
-    .success-banner{background:linear-gradient(135deg,#0d1b35,#1a2d6a);border-radius:18px;padding:36px;text-align:center;margin-bottom:28px;color:white;}
-    .success-icon{font-size:56px;margin-bottom:14px;}
     .success-banner h1{font-family:'Playfair Display',serif;font-size:26px;margin-bottom:8px;}
     .success-banner p{font-size:15px;opacity:0.8;}
-    .booking-code-badge{display:inline-block;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);padding:8px 24px;border-radius:20px;margin-top:16px;font-size:18px;font-weight:700;letter-spacing:2px;}
-    .detail-card{background:white;border-radius:18px;padding:28px;box-shadow:var(--card-shadow);margin-bottom:20px;}
     .detail-card h2{font-size:16px;font-weight:700;color:var(--forest);margin-bottom:20px;padding-bottom:12px;border-bottom:2px solid var(--cream);}
-    .detail-row{display:flex;justify-content:space-between;align-items:flex-start;padding:12px 0;border-bottom:1px solid #f5f5f5;}
     .detail-row:last-child{border-bottom:none;}
     .detail-row .label{font-size:13px;color:var(--muted);}
     .detail-row .value{font-size:14px;font-weight:600;color:var(--ink);text-align:right;max-width:60%;}
@@ -23,15 +17,11 @@
     .route-middle{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;}
     .route-plane{font-size:20px;}
     .route-duration{font-size:12px;color:var(--muted);}
-    .total-highlight{background:linear-gradient(135deg,#0d1b35,#1a2d6a);color:white;border-radius:12px;padding:20px 24px;display:flex;justify-content:space-between;align-items:center;margin-top:4px;}
     .total-highlight .tl{font-size:13px;opacity:0.75;}
     .total-highlight .tv{font-family:'Playfair Display',serif;font-size:24px;font-weight:900;}
     .actions{display:flex;gap:12px;flex-wrap:wrap;}
-    .btn-primary{background:var(--jade);color:white;padding:12px 28px;border-radius:10px;font-size:14px;font-weight:600;text-decoration:none;display:inline-block;transition:background 0.2s;}
     .btn-primary:hover{background:var(--forest);}
-    .btn-outline{background:white;color:var(--coral);border:1.5px solid var(--coral);padding:12px 28px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;}
     .btn-outline:hover{background:var(--coral);color:white;}
-    .btn-ghost{background:white;color:var(--muted);border:1.5px solid #e0dbd2;padding:12px 28px;border-radius:10px;font-size:14px;font-weight:600;text-decoration:none;display:inline-block;transition:all 0.2s;}
     .btn-ghost:hover{border-color:var(--jade);color:var(--jade);}
 </style>
 @endsection

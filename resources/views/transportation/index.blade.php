@@ -2,13 +2,23 @@
 @section('title', 'Transportasi — NusantaraGuide')
 @section('styles')
 <style>
-    .hero{background:linear-gradient(135deg,#0d1b35 0%,#1a2d6a 100%);padding:52px 8% 0;text-align:center;}
+
+    .hero {
+        background: linear-gradient(135deg,#0d1b35 0%,#1a2d6a 100%);
+        padding: 52px 8% 0 !important;
+        text-align: center !important;
+        min-height: auto !important;
+        height: auto !important;
+        display: block !important;
+        align-items: unset !important;
+        padding-left: 8% !important;
+    }
     .hero h1{font-family:'Playfair Display',serif;font-size:clamp(28px,5vw,48px);color:white;font-weight:900;margin-bottom:10px;}
     .hero p{font-size:15px;color:rgba(255,255,255,0.7);margin-bottom:32px;}
-    .type-tabs{display:inline-flex;background:rgba(255,255,255,0.1);border-radius:12px;padding:4px;margin-bottom:28px;}
-    .type-tab{padding:10px 28px;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;text-decoration:none;color:rgba(255,255,255,0.65);transition:all 0.2s;}
+    body .type-tabs{display:inline-flex;background:rgba(255,255,255,0.1);border-radius:12px;padding:4px;margin-bottom:28px;}
+    body .type-tab{padding:10px 28px;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;text-decoration:none;color:rgba(255,255,255,0.65);transition:all 0.2s;}
     .type-tab.active{background:white;color:var(--ink);}
-    .search-card{background:white;border-radius:18px 18px 0 0;padding:28px 32px;max-width:900px;margin:0 auto;box-shadow:0 -4px 32px rgba(0,0,0,0.1);}
+    body .search-card{background:white;border-radius:18px 18px 0 0;padding:28px 32px;max-width:900px;margin:0 auto;box-shadow:0 -4px 32px rgba(0,0,0,0.1);}
     .search-grid{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:12px;align-items:end;}
     .form-group label{display:block;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
     .form-group select,.form-group input{width:100%;padding:12px 14px;border:1.5px solid #e0dbd2;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--ink);background:var(--cream);outline:none;transition:border-color 0.2s;}

@@ -50,7 +50,7 @@ class ItineraryPost extends Model
     public function likes()
     {
         return $this->belongsToMany(Customer::class, 'itinerary_likes', 'itinerary_id', 'user_id')
-                    ->withTimestamps();
+                    ->withPivot('created_at');
     }
 
     public function comments()

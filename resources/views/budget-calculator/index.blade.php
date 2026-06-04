@@ -2,11 +2,12 @@
 @section('title', 'Kalkulator Budget Perjalanan — NusantaraGuide')
 @section('styles')
 <style>
-    .hero{background:linear-gradient(135deg,#1a3a2a 0%,#2d6a4f 100%);padding:56px 8% 48px;text-align:center;}
+
+    body .hero{background:linear-gradient(135deg,#1a3a2a 0%,#2d6a4f 100%);padding:56px 8% 48px;text-align:center;}
     .hero h1{font-family:'Playfair Display',serif;font-size:clamp(28px,5vw,48px);color:white;font-weight:900;margin-bottom:10px;}
     .hero p{font-size:16px;color:rgba(255,255,255,0.75);max-width:540px;margin:0 auto;}
-    .calc-wrap{max-width:860px;margin:-40px auto 0;padding:0 24px 80px;position:relative;z-index:2;}
-    .calc-card{background:white;border-radius:20px;padding:36px;box-shadow:0 8px 40px rgba(26,58,42,0.15);}
+    body .calc-wrap{max-width:860px;margin:-40px auto 0;padding:0 24px 80px;position:relative;z-index:2;}
+    body .calc-card{background:white;border-radius:20px;padding:36px;box-shadow:0 8px 40px rgba(26,58,42,0.15);}
     .calc-card h2{font-family:'Playfair Display',serif;font-size:24px;color:var(--forest);margin-bottom:28px;text-align:center;}
     .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
     .form-group{display:flex;flex-direction:column;gap:7px;}
@@ -31,7 +32,10 @@
     .live-preview .lp-label{font-size:13px;opacity:0.75;margin-bottom:4px;}
     .live-preview .lp-value{font-family:'Playfair Display',serif;font-size:28px;font-weight:900;}
     .live-preview .lp-note{font-size:12px;opacity:0.6;margin-top:2px;}
-    .section{padding:80px 8%;margin-top:40px;}
+    .section {
+        padding: 80px 8% !important;
+        margin-top: 60px !important;
+    }
     .section-tag{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--jade);display:flex;align-items:center;gap:8px;margin-bottom:10px;}
     .section-tag::before{content:'';width:20px;height:2px;background:var(--jade);}
     .section-title{font-family:'Playfair Display',serif;font-size:clamp(22px,3vw,32px);color:var(--forest);margin-bottom:32px;}
@@ -40,7 +44,7 @@
     .tip-icon{font-size:32px;margin-bottom:10px;}
     .tip-title{font-size:15px;font-weight:700;color:var(--forest);margin-bottom:6px;}
     .tip-text{font-size:13px;color:var(--muted);line-height:1.7;}
-    @media(max-width:700px){.form-grid{grid-template-columns:1fr;}.style-grid{grid-template-columns:1fr 1fr;}.calc-wrap{padding:0 16px 60px;}}
+    @media(max-width:700px){.form-grid{grid-template-columns:1fr;}.style-grid{grid-template-columns:1fr 1fr;}body .calc-wrap{padding:0 16px 60px;}}
 </style>
 @endsection
 @section('content')
