@@ -9,7 +9,7 @@ class Customer extends Authenticatable
 {
     use Notifiable;
 
-    protected $table = 'customer';
+    protected $table = 'users';
 
     public $timestamps = true;
 
